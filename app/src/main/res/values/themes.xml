@@ -2,6 +2,7 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Wondrobe" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/purple_light</item>
+        <item name="android:background">@color/white</item>
         <item name="colorPrimaryVariant">@color/purple_light</item>
         <item name="colorOnPrimary">@color/purple_light</item>
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
@@ -14,4 +15,5 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/isotype_splash</item>
         <item name="postSplashScreenTheme">@style/Base.Theme.Wondrobe</item>
     </style>
+
 </resources>
