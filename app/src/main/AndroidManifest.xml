@@ -13,11 +13,11 @@
         android:theme="@style/Theme.Wondrobe"
         tools:targetApi="31">
         <activity
-            android:name=".Splash.Splash"
+            android:name=".Charge"
+            android:theme="@style/Theme.App.SplashScreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
