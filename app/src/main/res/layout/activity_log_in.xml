@@ -19,4 +19,203 @@
         app:srcCompat="@drawable/isotype_black"
         android:tag="isotype_image"/>
 
+    <LinearLayout
+        android:id="@+id/linearLayoutEmail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="13dp"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintTop_toBottomOf="@id/isotype"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- TextView "Username" -->
+        <TextView
+            android:id="@+id/emailLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/username"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_gravity="left"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="2dp"/>
+
+        <!-- EditText "Email" -->
+        <EditText
+            android:id="@+id/emailEditText"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_username"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/kollektif"
+            android:textSize="15sp"
+            style="@style/EditText.DarkTheme"
+            android:background="@drawable/button_white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="13dp"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- TextView "Password" -->
+        <TextView
+            android:id="@+id/passwordLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/password"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_gravity="left"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="2dp"/>
+
+        <!-- EditText "Password" -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <EditText
+                android:id="@+id/passwordEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/enter_password"
+                android:paddingStart="12dp"
+                android:paddingEnd="62dp"
+                android:gravity="center_vertical"
+                android:fontFamily="@font/kollektif"
+                android:textSize="15sp"
+                style="@style/EditText.DarkTheme"
+                android:background="@drawable/button_white"
+                android:inputType="textPassword" />
+
+            <ImageView
+                android:id="@+id/passwordVisibilityButton"
+                android:layout_width="33dp"
+                android:layout_height="33dp"
+                android:layout_marginEnd="13dp"
+                android:layout_gravity="center_vertical|end"
+                android:src="@drawable/ic_hidden_24" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Button Sing up -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonSignUp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/button_purple"
+        android:text="@string/logIn"
+        android:fontFamily="@font/kollektif"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutPassword"
+        app:layout_constraintWidth_percent="0.95"/>
+
+    <LinearLayout
+        android:id="@+id/alreadyAnAccount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@id/buttonSignUp"
+        app:layout_constraintStart_toStartOf="@id/buttonSignUp"
+        app:layout_constraintTop_toBottomOf="@id/buttonSignUp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_to_wondrobe"
+            style="@style/TextView.DarkTheme"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/changeLo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_account"
+            android:textColor="@color/purple_light"
+            android:textSize="14sp"
+            android:layout_marginStart="4dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/continueWithSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/alreadyAnAccount"
+        android:layout_marginTop="14dp"
+        android:gravity="center_vertical|center_horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <View
+            android:layout_width="70dp"
+            android:layout_height="1dp"
+            style="@style/Line" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/continue_with"
+            style="@style/TextView.DarkTheme"
+            android:textSize="14sp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_gravity="center"/>
+
+        <View
+            android:layout_width="70dp"
+            android:layout_height="1dp"
+            style="@style/Line"/>
+    </LinearLayout>
+
+    <!-- Button Google -->
+    <LinearLayout
+        android:id="@+id/linear_layout"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/button_white"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/continueWithSection"
+        app:layout_constraintWidth_percent="0.95" >
+
+        <ImageView
+            android:id="@+id/icon_google"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_google"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="15dp" />
+
+        <TextView
+            android:id="@+id/text_google"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/login_with_google"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:fontFamily="@font/kollektif" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

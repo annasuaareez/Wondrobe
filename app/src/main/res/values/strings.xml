@@ -18,7 +18,7 @@
     <string name="already_have_an_account">Already have an account in Wondrobe?</string>
     <string name="continue_with">or continue with</string>
     <string name="signup_with_google">Signup with Google</string>
-
     <string name="new_to_wondrobe">New to Wondrobe?</string>
     <string name="create_account">Create an Account</string>
+    <string name="login_with_google">Login with Google</string>
 </resources>
