@@ -3,4 +3,16 @@
     <string name="isotype">Proyect isotype</string>
     <string name="logIn">Log In</string>
     <string name="signUp">Sign Up</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="first_name">First name</string>
+    <string name="username">Username</string>
+    <string name="enter_name">Enter your name</string>
+    <string name="enter_username">Enter your username</string>
+    <string name="email">Email</string>
+    <string name="enter_email">Enter your email</string>
+    <string name="password">Password</string>
+    <string name="enter_password">Enter your password</string>
 </resources>
