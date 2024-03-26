@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "172335089066",
+    "project_id": "wondrobe-6b957",
+    "storage_bucket": "wondrobe-6b957.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:172335089066:android:ca0197d4c2bb6fa06a17d3",
+        "android_client_info": {
+          "package_name": "com.example.wondrobe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "172335089066-9bsns9qvefrsjth85q3ontbn379iir4f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wondrobe",
+            "certificate_hash": "e07a48e1fda531b9ecd9e44e7104644cfa577d4b"
+          }
+        },
+        {
+          "client_id": "172335089066-h9saq08h5dms9aaalio8bgepr1q7aou3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwYkaSBhKT2OCWIVl7jax_9JWIWPPuLoU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "172335089066-h9saq08h5dms9aaalio8bgepr1q7aou3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

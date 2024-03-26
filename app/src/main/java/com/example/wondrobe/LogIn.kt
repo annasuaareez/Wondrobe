@@ -1,8 +1,10 @@
 package com.example.wondrobe
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 
 class LogIn : AppCompatActivity() {
@@ -11,6 +13,7 @@ class LogIn : AppCompatActivity() {
         setContentView(R.layout.activity_log_in)
 
         val isotypeImageView = findViewById<ImageView>(R.id.isotype)
+        val changeToSign = findViewById<TextView>(R.id.changeSignIn)
 
         // Escuchar cambios en el tema de la aplicación
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
@@ -24,6 +27,14 @@ class LogIn : AppCompatActivity() {
         } else {
             // Modo claro
             isotypeImageView.setImageResource(R.drawable.isotype_black)
+        }
+
+        //Cambia de vista al Sign up
+        changeToSign.setOnClickListener {
+            val intent = Intent(this, SignUp::class.java)
+            startActivity(intent)
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            finish()
         }
     }
 }
