@@ -11,7 +11,7 @@
         android:layout_width="190dp"
         android:layout_height="150dp"
         android:layout_gravity="center"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="33dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -193,8 +193,114 @@
                 android:layout_marginEnd="13dp"
                 android:layout_gravity="center_vertical|end"
                 android:src="@drawable/ic_hidden_24" />
-
         </FrameLayout>
+    </LinearLayout>
+
+    <!-- Button Sing up -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonSignUp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/button_purple"
+        android:text="@string/signUp"
+        android:fontFamily="@font/kollektif"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutPassword"
+        app:layout_constraintWidth_percent="0.95"/>
+
+    <LinearLayout
+        android:id="@+id/alreadyAnAccount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@id/buttonSignUp"
+        app:layout_constraintStart_toStartOf="@id/buttonSignUp"
+        app:layout_constraintTop_toBottomOf="@id/buttonSignUp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/already_have_an_account"
+            style="@style/TextView.DarkTheme"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/changeLo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/logIn"
+            android:textColor="@color/purple_light"
+            android:textSize="14sp"
+            android:layout_marginStart="4dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/continueWithSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/alreadyAnAccount"
+        android:layout_marginTop="14dp"
+        android:gravity="center_vertical|center_horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <View
+            android:layout_width="70dp"
+            android:layout_height="1dp"
+            style="@style/Line" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/continue_with"
+            style="@style/TextView.DarkTheme"
+            android:textSize="14sp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_gravity="center"/>
+
+        <View
+            android:layout_width="70dp"
+            android:layout_height="1dp"
+            style="@style/Line"/>
+    </LinearLayout>
+
+    <!-- Button Google -->
+    <LinearLayout
+        android:id="@+id/linear_layout"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/button_white"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/continueWithSection"
+        app:layout_constraintWidth_percent="0.95" >
+
+        <ImageView
+            android:id="@+id/icon_google"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_google"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="15dp" />
+
+        <TextView
+            android:id="@+id/text_google"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/signup_with_google"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:fontFamily="@font/kollektif" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

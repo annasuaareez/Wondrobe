@@ -19,5 +19,4 @@
         app:srcCompat="@drawable/isotype_black"
         android:tag="isotype_image"/>
 
-
 </androidx.constraintlayout.widget.ConstraintLayout>

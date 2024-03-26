@@ -16,4 +16,8 @@
         <item name="postSplashScreenTheme">@style/Base.Theme.Wondrobe</item>
     </style>
 
+    <style name="Line">
+        <item name="android:background">@color/black</item>
+    </style>
+
 </resources>
