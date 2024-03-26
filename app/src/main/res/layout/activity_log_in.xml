@@ -187,7 +187,7 @@
 
     <!-- Button Google -->
     <LinearLayout
-        android:id="@+id/linear_layout"
+        android:id="@+id/loginWithGoogle"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginTop="20dp"

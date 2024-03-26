@@ -113,7 +113,7 @@ class SignUp : AppCompatActivity() {
                         FirebaseAuth.getInstance().signOut()
                     } else {
                         // El usuario es nuevo, proceder con el registro o inicio de sesión
-                        showAlertDialog("Login successful")
+                        //showAlertDialog("Login successful")
                         val intent = Intent(this@SignUp, MainActivity::class.java)
                         startActivity(intent)
                         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
