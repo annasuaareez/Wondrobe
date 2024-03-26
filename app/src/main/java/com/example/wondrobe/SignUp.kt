@@ -14,7 +14,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
@@ -64,8 +63,12 @@ class SignUp : AppCompatActivity() {
 
         signUpWithGoogle.setOnClickListener {
             if (isConnect(this)) {
-                val singIntent = googleSignInClient.signInIntent
-                startActivityForResult(singIntent, RC_SIGN_IN)
+                // Cerrar sesión de Google para permitir al usuario seleccionar otra cuenta
+                googleSignInClient.signOut().addOnCompleteListener {
+                    // Una vez que se ha cerrado la sesión, iniciar el flujo de inicio de sesión
+                    val signInIntent = googleSignInClient.signInIntent
+                    startActivityForResult(signInIntent, RC_SIGN_IN)
+                }
             } else {
                 showAlertDialog("No internet connection")
             }
@@ -99,15 +102,31 @@ class SignUp : AppCompatActivity() {
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
         val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
         FirebaseAuth.getInstance().signInWithCredential(credential)
-            .addOnSuccessListener {
-                showAlertDialog("Login successful")
-
-            }
-            .addOnFailureListener {
-                it.printStackTrace()
-                it.message?.let { it1 -> showAlertDialog(it1) }
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Verificar si el usuario ya está registrado con la dirección de correo electrónico asociada a su cuenta de Google
+                    val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
+                    if (!isNewUser) {
+                        // El usuario ya está registrado, mostrar mensaje de advertencia
+                        showAlertDialog("This account has already been registered")
+                        // Cerrar la sesión de Firebase ya que el usuario no se ha autenticado correctamente
+                        FirebaseAuth.getInstance().signOut()
+                    } else {
+                        // El usuario es nuevo, proceder con el registro o inicio de sesión
+                        showAlertDialog("Login successful")
+                        val intent = Intent(this@SignUp, MainActivity::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                        finish()
+                    }
+                } else {
+                    // Error al autenticar con Firebase
+                    task.exception?.printStackTrace()
+                    task.exception?.message?.let { message -> showAlertDialog(message) }
+                }
             }
     }
+
 
     private fun showAlertDialog(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
