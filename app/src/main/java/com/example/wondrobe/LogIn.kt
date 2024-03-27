@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -30,6 +31,11 @@ class LogIn : AppCompatActivity() {
         val isotypeImageView = findViewById<ImageView>(R.id.isotype)
         val changeToSign = findViewById<TextView>(R.id.changeSignIn)
         val logInWithGoogle = findViewById<LinearLayout>(R.id.loginWithGoogle)
+
+        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
+        val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
+
+        PasswordVisibilityToggle(passwordEditText, passwordVisibilityButton)
 
         // Configurar el inicio de sesión con Google
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

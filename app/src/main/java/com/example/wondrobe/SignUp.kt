@@ -37,6 +37,10 @@ class SignUp : AppCompatActivity() {
         val changeToLog = findViewById<TextView>(R.id.changeLogIn)
         val buttonSignUp = findViewById<AppCompatButton>(R.id.buttonSignUp)
         val signUpWithGoogle = findViewById<LinearLayout>(R.id.singUpWithGoogle)
+        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
+        val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
+
+        PasswordVisibilityToggle(passwordEditText, passwordVisibilityButton)
 
         // Configurar el inicio de sesión con Google
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
