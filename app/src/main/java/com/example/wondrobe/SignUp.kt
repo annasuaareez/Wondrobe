@@ -1,7 +1,6 @@
 package com.example.wondrobe
 
 import ValidationUtils
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
@@ -9,6 +8,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
@@ -90,38 +90,6 @@ class SignUp : AppCompatActivity() {
 
     }
 
-    private fun registerUser(
-        email: String,
-        username: String,
-        firstName: String,
-        password: String
-    ) {
-        val validationResult = ValidationUtils.validateFields(email, username, firstName, password)
-
-        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
-
-            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
-            val user = User(email = email, username = username, firstName = firstName, password = encryptedPassword)
-
-            val db = FirebaseFirestore.getInstance()
-
-            db.collection("users")
-                .document()
-                .set(user)
-                .addOnSuccessListener {
-                    // Mostrar un mensaje de éxito o realizar otras acciones necesarias
-                    showAlertToast("User successfully registered")
-                    redirectToLogIn()
-                }
-                .addOnFailureListener {e ->
-                    // Manejar el error en caso de que falle la escritura en Firestore
-                    showAlertToast("Error registering user: ${e.message}")
-                }
-        } else {
-            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
-        }
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -167,11 +135,96 @@ class SignUp : AppCompatActivity() {
             }
     }
 
+    private fun registerUser(
+        email: String,
+        username: String,
+        firstName: String,
+        password: String
+    ) {
+        val validationResult = ValidationUtils.validateFields(email, username, firstName, password)
+
+        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
+            checkEmailAvailability(email) { isAvailableEmail ->
+                if (isAvailableEmail) {
+                    checkUsernameAvailability(username) { isAvailableUsername ->
+                        if (isAvailableUsername) {
+                            // Tanto el correo electrónico como el nombre de usuario están disponibles, proceder con el registro
+                            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
+                            val user = User(email = email, username = username, firstName = firstName, password = encryptedPassword)
+
+                            val db = FirebaseFirestore.getInstance()
+
+                            db.collection("users")
+                                .add(user)
+                                .addOnSuccessListener { documentReference ->
+                                    // Mostrar un mensaje de éxito o realizar otras acciones necesarias
+                                    showAlertToast("User successfully registered")
+                                    redirectToLogIn()
+                                }
+                                .addOnFailureListener { e ->
+                                    // Manejar el error en caso de que falle la escritura en Firestore
+                                    showAlertToast("Error registering user: ${e.message}")
+                                }
+                        } else {
+                            // Mostrar AlertDialog indicando que el nombre de usuario ya está en uso
+                            showAlertDialog("Username is already taken. Please choose another one.")
+                        }
+                    }
+                } else {
+                    // Mostrar AlertDialog indicando que el correo electrónico ya está registrado
+                    showAlertDialog("Email is already registered.")
+                }
+            }
+        } else {
+            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
+        }
+    }
+
+    private fun checkEmailAvailability(email: String, callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        // Verificar disponibilidad del correo electrónico
+        db.collection("users")
+            .whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                callback(documents.isEmpty)
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                showAlertToast("Error checking email availability: ${e.message}")
+                // Llamar al callback con un valor predeterminado en caso de error
+                callback(false)
+            }
+    }
+
+    private fun checkUsernameAvailability(username: String, callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        // Verificar disponibilidad del nombre de usuario
+        db.collection("users")
+            .whereEqualTo("username", username)
+            .get()
+            .addOnSuccessListener { documents ->
+                callback(documents.isEmpty)
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                showAlertToast("Error checking username availability: ${e.message}")
+                // Llamar al callback con un valor predeterminado en caso de error
+                callback(false)
+            }
+    }
+
     private fun redirectToLogIn() {
         val intent = Intent(this, LogIn::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         finish()
+    }
+
+    private fun showAlertToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun showAlertDialog(message: String) {
@@ -180,9 +233,5 @@ class SignUp : AppCompatActivity() {
         alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
         val alertDialog = alertDialogBuilder.create()
         alertDialog.show()
-    }
-
-    private fun showAlertToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
