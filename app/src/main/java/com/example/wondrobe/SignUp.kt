@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
@@ -17,6 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignUp : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
@@ -82,7 +84,7 @@ class SignUp : AppCompatActivity() {
                     startActivityForResult(signInIntent, RC_SIGN_IN)
                 }
             } else {
-                showAlertDialog("No internet connection")
+                showAlertToast("No internet connection")
             }
         }
 
@@ -97,7 +99,21 @@ class SignUp : AppCompatActivity() {
         val validationResult = ValidationUtils.validateFields(email, username, firstName, password)
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
-            showAlertDialog("Todo bien")
+            val user = User(email = email, username = username, firstName = firstName, password = password)
+
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users")
+                .document()
+                .set(user)
+                .addOnSuccessListener {
+                    // Mostrar un mensaje de éxito o realizar otras acciones necesarias
+                    showAlertToast("User successfully registered")
+                }
+                .addOnFailureListener {e ->
+                    // Manejar el error en caso de que falle la escritura en Firestore
+                    showAlertToast("Error registering user: ${e.message}")
+                }
         } else {
             ValidationUtils.showInvalidFieldsAlert(this, validationResult)
         }
@@ -129,7 +145,7 @@ class SignUp : AppCompatActivity() {
                     val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
                     if (!isNewUser) {
                         // El usuario ya está registrado, mostrar mensaje de advertencia
-                        showAlertDialog("This account has already been registered")
+                        showAlertToast("This account has already been registered")
                         // Cerrar la sesión de Firebase ya que el usuario no se ha autenticado correctamente
                         FirebaseAuth.getInstance().signOut()
                     } else {
@@ -154,5 +170,9 @@ class SignUp : AppCompatActivity() {
         alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
         val alertDialog = alertDialogBuilder.create()
         alertDialog.show()
+    }
+
+    private fun showAlertToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
