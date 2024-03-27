@@ -99,7 +99,9 @@ class SignUp : AppCompatActivity() {
         val validationResult = ValidationUtils.validateFields(email, username, firstName, password)
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
-            val user = User(email = email, username = username, firstName = firstName, password = password)
+
+            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
+            val user = User(email = email, username = username, firstName = firstName, password = encryptedPassword)
 
             val db = FirebaseFirestore.getInstance()
 
@@ -109,6 +111,7 @@ class SignUp : AppCompatActivity() {
                 .addOnSuccessListener {
                     // Mostrar un mensaje de éxito o realizar otras acciones necesarias
                     showAlertToast("User successfully registered")
+                    redirectToLogIn()
                 }
                 .addOnFailureListener {e ->
                     // Manejar el error en caso de que falle la escritura en Firestore
@@ -162,6 +165,13 @@ class SignUp : AppCompatActivity() {
                     //task.exception?.message?.let { message -> showAlertDialog(message) }
                 }
             }
+    }
+
+    private fun redirectToLogIn() {
+        val intent = Intent(this, LogIn::class.java)
+        startActivity(intent)
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        finish()
     }
 
     private fun showAlertDialog(message: String) {
