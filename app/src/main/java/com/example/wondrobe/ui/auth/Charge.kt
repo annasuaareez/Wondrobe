@@ -1,10 +1,11 @@
-package com.example.wondrobe
+package com.example.wondrobe.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.wondrobe.R
 
 class Charge: AppCompatActivity() {
     private val splashTimeOut: Long = 1500

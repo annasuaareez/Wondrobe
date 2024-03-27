@@ -1,4 +1,4 @@
-package com.example.wondrobe
+package com.example.wondrobe.utils
 
 import java.security.MessageDigest
 

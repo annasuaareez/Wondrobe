@@ -1,4 +1,4 @@
-package com.example.wondrobe
+package com.example.wondrobe.ui.auth
 
 import android.content.Context
 import android.content.Intent
@@ -11,14 +11,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.wondrobe.MainActivity
+import com.example.wondrobe.R
+import com.example.wondrobe.utils.PasswordVisibility
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.GoogleAuthProvider.*
 
+@Suppress("DEPRECATION")
 class LogIn : AppCompatActivity() {
     private val RC_SIGN_IN = 9001
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +38,7 @@ class LogIn : AppCompatActivity() {
         val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
         val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
 
-        PasswordVisibilityToggle(passwordEditText, passwordVisibilityButton)
+        PasswordVisibility(passwordEditText, passwordVisibilityButton)
 
         // Configurar el inicio de sesión con Google
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -79,12 +82,14 @@ class LogIn : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     fun isConnect(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
         return networkInfo != null && networkInfo.isConnected
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 

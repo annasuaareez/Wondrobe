@@ -1,4 +1,4 @@
-package com.example.wondrobe
+package com.example.wondrobe.data
 
 data class User(
     val email: String? = null,

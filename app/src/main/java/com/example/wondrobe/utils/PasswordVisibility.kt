@@ -1,11 +1,12 @@
-package com.example.wondrobe
+package com.example.wondrobe.utils
 
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.widget.EditText
 import android.widget.ImageView
+import com.example.wondrobe.R
 
-class PasswordVisibilityToggle(private val editText: EditText, private val imageView: ImageView) {
+class PasswordVisibility(private val editText: EditText, private val imageView: ImageView) {
 
     private var isPasswordVisible = false
 

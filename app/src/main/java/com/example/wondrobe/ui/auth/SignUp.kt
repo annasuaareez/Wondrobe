@@ -1,4 +1,4 @@
-package com.example.wondrobe
+package com.example.wondrobe.ui.auth
 
 import ValidationUtils
 import android.content.Intent
@@ -12,6 +12,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
+import com.example.wondrobe.MainActivity
+import com.example.wondrobe.R
+import com.example.wondrobe.data.User
+import com.example.wondrobe.utils.PasswordEncryptor
+import com.example.wondrobe.utils.PasswordVisibility
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -20,9 +25,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 
+@Suppress("DEPRECATION")
 class SignUp : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private val RC_SIGN_IN = 9001
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +44,10 @@ class SignUp : AppCompatActivity() {
         val changeToLog = findViewById<TextView>(R.id.changeLogIn)
         val buttonSignUp = findViewById<AppCompatButton>(R.id.buttonSignUp)
         val signUpWithGoogle = findViewById<LinearLayout>(R.id.singUpWithGoogle)
-        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
+        val passwordEditText = this.findViewById<EditText>(R.id.passwordEditText)
         val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
 
-        PasswordVisibilityToggle(passwordEditText, passwordVisibilityButton)
+        PasswordVisibility(passwordEditText, passwordVisibilityButton)
 
         // Configurar el inicio de sesión con Google
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -94,6 +101,7 @@ class SignUp : AppCompatActivity() {
 
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -160,7 +168,7 @@ class SignUp : AppCompatActivity() {
 
                             db.collection("users")
                                 .add(user)
-                                .addOnSuccessListener { documentReference ->
+                                .addOnSuccessListener {
                                     // Mostrar un mensaje de éxito o realizar otras acciones necesarias
                                     showAlertToast("User successfully registered")
                                     redirectToLogIn()

@@ -18,13 +18,13 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".SignUp"
+            android:name=".ui.auth.SignUp"
             android:exported="false" />
         <activity
-            android:name=".LogIn"
+            android:name=".ui.auth.LogIn"
             android:exported="false" />
         <activity
-            android:name=".Charge"
+            android:name=".ui.auth.Charge"
             android:exported="true"
             android:theme="@style/Theme.App.SplashScreen">
             <intent-filter>

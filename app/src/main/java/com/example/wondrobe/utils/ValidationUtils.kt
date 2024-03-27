@@ -97,6 +97,7 @@ object ValidationUtils {
         WHITESPACE_IN_FIELD
     }
 
+    @Deprecated("Deprecated in Java")
     fun isConnect(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
