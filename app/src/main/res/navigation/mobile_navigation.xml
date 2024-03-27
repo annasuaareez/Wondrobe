@@ -12,14 +12,27 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.wondrobe.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_calendar"
+        android:name="com.example.wondrobe.ui.calendar.CalendarFragment"
+        android:label="@string/title_calendar"
+        tools:layout="@layout/fragment_calendar" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.wondrobe.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_add"
+        android:name="com.example.wondrobe.ui.add.AddFragment"
+        android:label="@string/title_add"
+        tools:layout="@layout/fragment_add" />
+
+    <fragment
+        android:id="@+id/navigation_wardrobe"
+        android:name="com.example.wondrobe.ui.wardrobe.WardrobeFragment"
+        android:label="@string/title_wardrobe"
+        tools:layout="@layout/fragment_wardrobe" />
+
+    <fragment
+        android:id="@+id/navigation_user"
+        android:name="com.example.wondrobe.ui.user.UserFragment"
+        android:label="@string/title_user"
+        tools:layout="@layout/fragment_user" />
+
 </navigation>

@@ -5,8 +5,10 @@
     <string name="signUp">Sign Up</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_calendar">Calendar</string>
+    <string name="title_add">Add</string>
+    <string name="title_wardrobe">Wardrobe</string>
+    <string name="title_user">User</string>
     <string name="first_name">First name</string>
     <string name="username">Username</string>
     <string name="enter_name">Enter your name</string>
@@ -22,4 +24,6 @@
     <string name="create_account">Create an Account</string>
     <string name="login_with_google">Login with Google</string>
     <string name="default_web_client_id">172335089066-h9saq08h5dms9aaalio8bgepr1q7aou3.apps.googleusercontent.com</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
