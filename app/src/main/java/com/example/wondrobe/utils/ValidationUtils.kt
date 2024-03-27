@@ -3,7 +3,7 @@ import android.net.ConnectivityManager
 import android.util.Patterns
 
 object ValidationUtils {
-    fun validateFields(email: String, username: String, firstName: String, password: String): Any {
+    fun validateFieldsSignUp(email: String, username: String, firstName: String, password: String): Any {
         return when {
             isAnyFieldEmpty(email, username, firstName, password) -> ValidationResult.EMPTY_FIELD
             containsWhiteSpace(email, username, password) -> ValidationResult.WHITESPACE_IN_FIELD
@@ -11,6 +11,14 @@ object ValidationUtils {
             containsNumbers(firstName) -> ValidationResult.INVALID_NAME
             !isPasswordStrongEnough(password) -> ValidationResult.WEAK_PASSWORD
             !isValidFirstName(firstName) -> ValidationResult.INVALID_NAME
+            else -> ValidationResult.SUCCESS
+        }
+    }
+
+    fun validateFieldsLogIn(username: String, password: String): Any {
+        return when {
+            isAnyFieldEmpty(username, password) -> ValidationResult.EMPTY_FIELD
+            containsWhiteSpace(username, password) -> ValidationResult.WHITESPACE_IN_FIELD
             else -> ValidationResult.SUCCESS
         }
     }

@@ -25,7 +25,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 
-@Suppress("DEPRECATION")
 class SignUp : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private val RC_SIGN_IN = 9001
@@ -44,7 +43,7 @@ class SignUp : AppCompatActivity() {
         val changeToLog = findViewById<TextView>(R.id.changeLogIn)
         val buttonSignUp = findViewById<AppCompatButton>(R.id.buttonSignUp)
         val signUpWithGoogle = findViewById<LinearLayout>(R.id.singUpWithGoogle)
-        val passwordEditText = this.findViewById<EditText>(R.id.passwordEditText)
+        val passwordEditText = this.findViewById<EditText>(R.id.passwordSignUpEditText)
         val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
 
         PasswordVisibility(passwordEditText, passwordVisibilityButton)
@@ -79,9 +78,9 @@ class SignUp : AppCompatActivity() {
 
         buttonSignUp.setOnClickListener {
             val firstName = findViewById<EditText>(R.id.firstNameEditText).text.toString()
-            val username = findViewById<EditText>(R.id.usernameEditText).text.toString()
+            val username = findViewById<EditText>(R.id.usernameSignUpEditText).text.toString()
             val email = findViewById<EditText>(R.id.emailEditText).text.toString()
-            val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
+            val password = findViewById<EditText>(R.id.passwordSignUpEditText).text.toString()
 
             registerUser(email, username, firstName, password)
         }
@@ -153,7 +152,7 @@ class SignUp : AppCompatActivity() {
         firstName: String,
         password: String
     ) {
-        val validationResult = ValidationUtils.validateFields(email, username, firstName, password)
+        val validationResult = ValidationUtils.validateFieldsSignUp(email, username, firstName, password)
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
             checkEmailAvailability(email) { isAvailableEmail ->
@@ -241,6 +240,7 @@ class SignUp : AppCompatActivity() {
 
     private fun showAlertDialog(message: String) {
         val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Item already registered")
         alertDialogBuilder.setMessage(message)
         alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
         val alertDialog = alertDialogBuilder.create()

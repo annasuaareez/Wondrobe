@@ -1,5 +1,7 @@
 package com.example.wondrobe.ui.auth
 
+import ValidationUtils
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -10,9 +12,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
+import com.example.wondrobe.utils.PasswordEncryptor
 import com.example.wondrobe.utils.PasswordVisibility
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -20,10 +25,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider.*
+import com.google.firebase.firestore.FirebaseFirestore
 
-@Suppress("DEPRECATION")
 class LogIn : AppCompatActivity() {
     private val RC_SIGN_IN = 9001
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
@@ -33,9 +39,9 @@ class LogIn : AppCompatActivity() {
 
         val isotypeImageView = findViewById<ImageView>(R.id.isotype)
         val changeToSign = findViewById<TextView>(R.id.changeSignIn)
+        val buttonLogIn = findViewById<AppCompatButton>(R.id.buttonLogIn)
         val logInWithGoogle = findViewById<LinearLayout>(R.id.loginWithGoogle)
-
-        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
+        val passwordEditText = findViewById<EditText>(R.id.passwordLogInEditText)
         val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
 
         PasswordVisibility(passwordEditText, passwordVisibilityButton)
@@ -68,6 +74,16 @@ class LogIn : AppCompatActivity() {
             finish()
         }
 
+        buttonLogIn.setOnClickListener {
+            val usernameEditText = findViewById<EditText>(R.id.usernameLoginEditText)
+            val passwordEditText = findViewById<EditText>(R.id.passwordLogInEditText)
+
+            val username = usernameEditText.text.toString()
+            val password = passwordEditText.text.toString()
+
+            loginUser(username, password)
+        }
+
         logInWithGoogle.setOnClickListener {
             if (isConnect(this)) {
                 // Cerrar sesión de Google para permitir al usuario seleccionar otra cuenta
@@ -77,8 +93,45 @@ class LogIn : AppCompatActivity() {
                     startActivityForResult(signInIntent, RC_SIGN_IN)
                 }
             } else {
-                showAlertDialog("No internet connection")
+                showAlertToast("No internet connection")
             }
+        }
+    }
+
+    private fun loginUser(
+        username: String,
+        password: String
+    ) {
+        val validationResult = ValidationUtils.validateFieldsLogIn(username, password)
+
+        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
+            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
+
+            val db = FirebaseFirestore.getInstance()
+            val usersCollection = db.collection("users")
+
+            usersCollection.whereEqualTo("username", username)
+                .whereEqualTo("password", encryptedPassword)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (!documents.isEmpty) {
+                        // Credenciales válidas, redirigir al usuario al MainActivity
+                        showAlertToast("Successful login")
+                        val intent = Intent(this@LogIn, MainActivity::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                        finish()
+                    } else {
+                        // Credenciales inválidas, mostrar diálogo
+                        showAlertDialog("Credentials are not valid")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    // Manejar errores de Firestore
+                    showAlertToast("Error verifying credentials: ${e.message}")
+                }
+        } else {
+            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
         }
     }
 
@@ -99,7 +152,7 @@ class LogIn : AppCompatActivity() {
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
-                showAlertDialog("Google sign in failed: ${e.message}")
+                showAlertToast("Google sign in failed: ${e.message}")
             }
         }
     }
@@ -111,7 +164,7 @@ class LogIn : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
                     if (isNewUser) {
-                        showAlertDialog("This account is not registered")
+                        showAlertToast("This account is not registered")
                     } else {
                         //showAlertDialog("Login successful")
                         val intent = Intent(this@LogIn, MainActivity::class.java)
@@ -120,13 +173,22 @@ class LogIn : AppCompatActivity() {
                         finish()
                     }
                 } else {
-                    showAlertDialog("Authentication failed: ${task.exception?.message}")
+                    showAlertToast("Authentication failed: ${task.exception?.message}")
                 }
             }
     }
 
-    private fun showAlertDialog(message: String) {
+    private fun showAlertToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showAlertDialog(message: String) {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Invalid credentials")
+        alertDialogBuilder.setMessage(message)
+        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 
 }

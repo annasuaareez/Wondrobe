@@ -90,7 +90,7 @@
 
             <!-- EditText "Username" -->
             <EditText
-                android:id="@+id/usernameEditText"
+                android:id="@+id/usernameSignUpEditText"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:hint="@string/enter_username"
@@ -173,7 +173,7 @@
             android:layout_height="50dp">
 
             <EditText
-                android:id="@+id/passwordEditText"
+                android:id="@+id/passwordSignUpEditText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/enter_password"
