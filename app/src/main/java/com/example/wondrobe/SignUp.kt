@@ -1,15 +1,16 @@
 package com.example.wondrobe
 
-import android.content.Context
+import ValidationUtils
+import android.app.AlertDialog
 import android.content.Intent
-import android.net.ConnectivityManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.AppCompatButton
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -20,6 +21,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 class SignUp : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private val RC_SIGN_IN = 9001
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
@@ -31,6 +33,7 @@ class SignUp : AppCompatActivity() {
 
         val isotypeImageView = findViewById<ImageView>(R.id.isotype)
         val changeToLog = findViewById<TextView>(R.id.changeLogIn)
+        val buttonSignUp = findViewById<AppCompatButton>(R.id.buttonSignUp)
         val signUpWithGoogle = findViewById<LinearLayout>(R.id.singUpWithGoogle)
 
         // Configurar el inicio de sesión con Google
@@ -53,7 +56,7 @@ class SignUp : AppCompatActivity() {
             isotypeImageView.setImageResource(R.drawable.isotype_black)
         }
 
-        //Cambiar de vista al Log in
+        // Cambiar de vista al Log in
         changeToLog.setOnClickListener {
             val intent = Intent(this, LogIn::class.java)
             startActivity(intent)
@@ -61,8 +64,17 @@ class SignUp : AppCompatActivity() {
             finish()
         }
 
+        buttonSignUp.setOnClickListener {
+            val firstName = findViewById<EditText>(R.id.firstNameEditText).text.toString()
+            val username = findViewById<EditText>(R.id.usernameEditText).text.toString()
+            val email = findViewById<EditText>(R.id.emailEditText).text.toString()
+            val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
+
+            registerUser(email, username, firstName, password)
+        }
+
         signUpWithGoogle.setOnClickListener {
-            if (isConnect(this)) {
+            if (ValidationUtils.isConnect(this)) {
                 // Cerrar sesión de Google para permitir al usuario seleccionar otra cuenta
                 googleSignInClient.signOut().addOnCompleteListener {
                     // Una vez que se ha cerrado la sesión, iniciar el flujo de inicio de sesión
@@ -76,10 +88,19 @@ class SignUp : AppCompatActivity() {
 
     }
 
-    fun isConnect(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
+    private fun registerUser(
+        email: String,
+        username: String,
+        firstName: String,
+        password: String
+    ) {
+        val validationResult = ValidationUtils.validateFields(email, username, firstName, password)
+
+        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
+            showAlertDialog("Todo bien")
+        } else {
+            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -93,7 +114,7 @@ class SignUp : AppCompatActivity() {
                     firebaseAuthWithGoogle(account)
                 } catch (e: ApiException) {
                     e.printStackTrace()
-                    e.message?.let { showAlertDialog(it) }
+                    //e.message?.let { showAlertDialog(it) }
                 }
             }
         }
@@ -122,14 +143,16 @@ class SignUp : AppCompatActivity() {
                 } else {
                     // Error al autenticar con Firebase
                     task.exception?.printStackTrace()
-                    task.exception?.message?.let { message -> showAlertDialog(message) }
+                    //task.exception?.message?.let { message -> showAlertDialog(message) }
                 }
             }
     }
 
-
     private fun showAlertDialog(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setMessage(message)
+        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
-
 }
