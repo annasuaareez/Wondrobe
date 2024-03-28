@@ -28,5 +28,4 @@
     <style name="Line">
         <item name="android:background">@color/white</item>
     </style>
-
 </resources>

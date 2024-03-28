@@ -1,7 +1,6 @@
 package com.example.wondrobe.ui.auth
 
 import ValidationUtils
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -33,6 +32,8 @@ class LogIn : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
+
+        supportActionBar?.hide()
 
         // Cambiar la imagen de acuerdo con el tema actual
         val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK

@@ -34,6 +34,8 @@ class SignUp : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
+        supportActionBar?.hide()
+
         mAuth = FirebaseAuth.getInstance()
 
         // Cambiar la imagen de acuerdo con el tema actual
