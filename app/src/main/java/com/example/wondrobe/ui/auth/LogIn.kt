@@ -94,53 +94,9 @@ class LogIn : AppCompatActivity() {
                     startActivityForResult(signInIntent, RC_SIGN_IN)
                 }
             } else {
-                showAlertToast("No internet connection")
+                showAlertDialog("No internet connection")
             }
         }
-    }
-
-    private fun loginUser(
-        username: String,
-        password: String
-    ) {
-        val validationResult = ValidationUtils.validateFieldsLogIn(username, password)
-
-        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
-            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
-
-            val db = FirebaseFirestore.getInstance()
-            val usersCollection = db.collection("users")
-
-            usersCollection.whereEqualTo("username", username)
-                .whereEqualTo("password", encryptedPassword)
-                .get()
-                .addOnSuccessListener { documents ->
-                    if (!documents.isEmpty) {
-                        // Credenciales válidas, redirigir al usuario al MainActivity
-                        showAlertToast("Successful login")
-                        val intent = Intent(this@LogIn, MainActivity::class.java)
-                        startActivity(intent)
-                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-                        finish()
-                    } else {
-                        // Credenciales inválidas, mostrar diálogo
-                        showAlertDialog("Credentials are not valid")
-                    }
-                }
-                .addOnFailureListener { e ->
-                    // Manejar errores de Firestore
-                    showAlertToast("Error verifying credentials: ${e.message}")
-                }
-        } else {
-            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    fun isConnect(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
     }
 
     @Deprecated("Deprecated in Java")
@@ -163,20 +119,131 @@ class LogIn : AppCompatActivity() {
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    val googleUser = account ?: return@addOnCompleteListener
+
+                    val email = googleUser.email.orEmpty()
                     val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
+
                     if (isNewUser) {
-                        showAlertToast("This account is not registered")
+                        // Eliminar la cuenta de Google si el usuario no está registrado en Firebase
+                        FirebaseAuth.getInstance().currentUser?.delete()?.addOnCompleteListener { deleteTask ->
+                            if (deleteTask.isSuccessful) {
+                                showAlertDialog("User not found in. Please sign up.")
+                            } else {
+                                showAlertToast("Error deleting account: ${deleteTask.exception?.message}")
+                            }
+                        }
                     } else {
-                        //showAlertDialog("Login successful")
-                        val intent = Intent(this@LogIn, MainActivity::class.java)
-                        startActivity(intent)
-                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-                        finish()
+                        // Si el usuario de Google ya existe en Firebase Auth, verificar si está registrado en Firestore
+                        checkIfUserExistsInFirestore(email)
                     }
-                } else {
-                    showAlertToast("Authentication failed: ${task.exception?.message}")
                 }
             }
+    }
+
+    private fun loginUser(
+        username: String,
+        password: String
+    ) {
+        val validationResult = ValidationUtils.validateFieldsLogIn(username, password)
+
+        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
+            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
+
+            val db = FirebaseFirestore.getInstance()
+            val usersCollection = db.collection("users")
+
+            usersCollection.whereEqualTo("username", username)
+                .whereEqualTo("password", encryptedPassword)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (!documents.isEmpty) {
+                        // Credenciales válidas, redirigir al usuario al MainActivity
+                        val userId = documents.documents[0].id
+                        saveUserId(userId)
+                        showAlertToast("Successful login")
+                        redirectToMainPage()
+                    } else {
+                        // Credenciales inválidas, mostrar diálogo
+                        showAlertDialog("Credentials are not valid")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    // Manejar errores de Firestore
+                    showAlertToast("Error verifying credentials: ${e.message}")
+                }
+        } else {
+            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    fun isConnect(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
+
+    private fun saveUserIdByEmail(email: String) {
+        val db = FirebaseFirestore.getInstance()
+        val usersCollection = db.collection("users")
+
+        usersCollection.whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    // Se encontró un usuario con el correo electrónico, guardar su ID
+                    val userId = documents.documents[0].id
+                    saveUserId(userId)
+                    showAlertToast("Successful login")
+                    redirectToMainPage()
+                } else {
+                    // No se encontró ningún usuario con el correo electrónico
+                    showAlertToast("User not found in database")
+                }
+            }
+            .addOnFailureListener { e ->
+                // Manejar errores de Firestore
+                showAlertToast("Error retrieving user data: ${e.message}")
+            }
+    }
+
+    private fun checkIfUserExistsInFirestore(email: String) {
+        val db = FirebaseFirestore.getInstance()
+        val usersCollection = db.collection("users")
+
+        usersCollection.whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    // Usuario encontrado en Firestore, obtener su ID y redirigir al MainActivity
+                    val userId = documents.documents[0].id
+                    saveUserId(userId)
+                    showAlertToast("Successful login")
+                    redirectToMainPage()
+                } else {
+                    // Usuario no encontrado en Firestore
+                    showAlertToast("User not found in database")
+                }
+            }
+            .addOnFailureListener { e ->
+                // Manejar errores de Firestore
+                showAlertToast("Error retrieving user data: ${e.message}")
+            }
+    }
+
+    private fun saveUserId(userId: String) {
+        val sharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("user_id", userId)
+        editor.apply()
+    }
+
+    private fun redirectToMainPage(){
+        val intent = Intent(this@LogIn, MainActivity::class.java)
+        startActivity(intent)
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        finish()
     }
 
     private fun showAlertToast(message: String) {

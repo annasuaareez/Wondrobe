@@ -34,9 +34,10 @@
         android:text="@string/first_name"
         android:fontFamily="@font/kollektif"
         android:textSize="25sp"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="@id/circle"
         app:layout_constraintTop_toBottomOf="@id/circle"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="16dp"/>
 
     <TextView
@@ -46,10 +47,11 @@
         android:text="@string/username"
         android:fontFamily="@font/kollektif"
         android:textSize="20sp"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="@id/circle"
         app:layout_constraintTop_toBottomOf="@id/textViewName"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="5dp"/>
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="8dp"/>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/editProfileButton"
