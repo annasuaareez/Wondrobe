@@ -139,6 +139,7 @@ class SignUp : AppCompatActivity() {
                             googleUser.email?.substringBefore('@') ?: ""
                         }
                         val email = googleUser.email.orEmpty()
+                        val photoUrl = googleUser.photoUrl.toString()
 
                         // Verificamos si el correo electronico ya esta registrado
                         checkEmailAvailability(email) {isAvailableEmail ->
@@ -148,20 +149,11 @@ class SignUp : AppCompatActivity() {
                                     email = email,
                                     username = username,
                                     firstName = firstName,
-                                    password = "" // No se guarda la contraseña para las cuentas de Google
+                                    password = "", // No se guarda la contraseña para las cuentas de Google
+                                    profileImage = photoUrl
                                 )
 
-                                val db = FirebaseFirestore.getInstance()
-
-                                db.collection("users")
-                                    .add(user)
-                                    .addOnSuccessListener {
-                                        showAlertToast("User successfully registered")
-                                        redirectToLogIn()
-                                    }
-                                    .addOnFailureListener { e ->
-                                        showAlertToast("Error registering user: ${e.message}")
-                                    }
+                                saveUserToFirestore(user)
                             } else {
                                 // El correo electrónico ya está registrado, mostrar mensaje de error
                                 showAlertDialog("This email is already registered")
@@ -276,6 +268,20 @@ class SignUp : AppCompatActivity() {
                 showAlertToast("Error checking username availability: ${e.message}")
                 // Llamar al callback con un valor predeterminado en caso de error
                 callback(false)
+            }
+    }
+
+    private fun saveUserToFirestore(user: User) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("users")
+            .add(user)
+            .addOnSuccessListener {
+                showAlertToast("User successfully registered")
+                redirectToLogIn()
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error registering user: ${e.message}")
             }
     }
 

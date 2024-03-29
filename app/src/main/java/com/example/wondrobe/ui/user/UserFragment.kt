@@ -1,14 +1,21 @@
 package com.example.wondrobe.ui.user
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.databinding.FragmentUserBinding
 import com.google.firebase.firestore.FirebaseFirestore
+import javax.sql.DataSource
 
 class UserFragment : Fragment() {
 
@@ -17,6 +24,7 @@ class UserFragment : Fragment() {
     private lateinit var userId: String
     private lateinit var firstName: String
     private lateinit var username: String
+    private lateinit var photoUrl: String
     private var userDetailsLoaded = false // Indica si los detalles del usuario ya han sido cargados
 
     override fun onCreateView(
@@ -50,6 +58,7 @@ class UserFragment : Fragment() {
                 if (document != null && document.exists()) {
                     firstName = document.getString("firstName") ?: ""
                     username = document.getString("username") ?: ""
+                    photoUrl = document.getString("profileImage") ?: ""
 
                     // Indicar que los detalles del usuario han sido cargados
                     userDetailsLoaded = true
@@ -69,6 +78,40 @@ class UserFragment : Fragment() {
         binding.textViewName.text = firstName
         binding.textViewUsername.text = formattedUsername
 
+        showAlertDialog(photoUrl)
+        // Verificar si el usuario tiene una foto de perfil
+        if (photoUrl.isNotEmpty()) {
+            // Cargar la imagen de perfil y aplicar la máscara circular
+            Glide.with(requireContext())
+                .load(photoUrl)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        // Manejar el error al cargar la imagen
+                        showAlertToast("Error loading image: ${e?.message}")
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable>?,
+                        dataSource: com.bumptech.glide.load.DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        showAlertToast("Imagen carga bien")
+                        return false
+                    }
+
+                })
+                .transform(CircleCrop())
+                .into(binding.circle)
+        }
+
         // Mostrar los TextView una vez que se han cargado los datos del usuario
         binding.textViewName.visibility = View.VISIBLE
         binding.textViewUsername.visibility = View.VISIBLE
@@ -76,6 +119,14 @@ class UserFragment : Fragment() {
 
     private fun showAlertToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showAlertDialog(message: String) {
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+        alertDialogBuilder.setMessage(message)
+        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 
     override fun onDestroyView() {
