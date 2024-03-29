@@ -1,5 +1,6 @@
 package com.example.wondrobe.ui.user
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -24,6 +25,7 @@ class UserFragment : Fragment() {
     private lateinit var userId: String
     private lateinit var firstName: String
     private lateinit var username: String
+    private lateinit var biography: String
     private lateinit var photoUrl: String
     private var userDetailsLoaded = false // Indica si los detalles del usuario ya han sido cargados
 
@@ -62,6 +64,7 @@ class UserFragment : Fragment() {
                 if (document != null && document.exists()) {
                     firstName = document.getString("firstName") ?: ""
                     username = document.getString("username") ?: ""
+                    biography = document.getString("biography") ?: ""
                     photoUrl = document.getString("profileImage") ?: ""
 
                     // Indicar que los detalles del usuario han sido cargados
@@ -81,6 +84,7 @@ class UserFragment : Fragment() {
         val formattedUsername = "@$username"
         binding.textViewName.text = firstName
         binding.textViewUsername.text = formattedUsername
+        binding.textViewBiography.text = biography
 
         //showAlertDialog(photoUrl)
         // Verificar si el usuario tiene una foto de perfil
@@ -119,11 +123,12 @@ class UserFragment : Fragment() {
         // Mostrar los TextView una vez que se han cargado los datos del usuario
         binding.textViewName.visibility = View.VISIBLE
         binding.textViewUsername.visibility = View.VISIBLE
+        binding.textViewBiography.visibility = View.VISIBLE
     }
 
     private fun redirectToEditUser() {
         val intent = Intent(activity, UserEdit::class.java)
-        startActivity(intent)
+        startActivityForResult(intent, REQUEST_CODE_EDIT_USER)
         activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 
@@ -134,5 +139,27 @@ class UserFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_EDIT_USER && resultCode == Activity.RESULT_OK) {
+            // Obtener los datos actualizados
+            val newUsername = data?.getStringExtra("username")
+            val newFirstName = data?.getStringExtra("firstName")
+            val newBiography = data?.getStringExtra("biography")
+
+            // Actualizar la interfaz de usuario con los nuevos datos
+            if (newUsername != null && newFirstName != null && newBiography != null) {
+                username = newUsername
+                firstName = newFirstName
+                biography = newBiography
+                updateUI()
+            }
+        }
+    }
+
+    companion object {
+        private const val REQUEST_CODE_EDIT_USER = 1001
     }
 }

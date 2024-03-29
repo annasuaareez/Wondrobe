@@ -137,7 +137,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- TextView "Username" -->
+        <!-- TextView "Name" -->
         <TextView
             android:id="@+id/newNameLabel"
             android:layout_width="wrap_content"
@@ -150,12 +150,51 @@
             android:layout_marginBottom="5dp"
             android:layout_marginStart="2dp"/>
 
-        <!-- EditText "Username" -->
+        <!-- EditText "Name" -->
         <EditText
             android:id="@+id/newNameEditText"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="@string/enter_new_username"
+            android:hint="@string/enter_new_name"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/kollektif"
+            android:textSize="15sp"
+            style="@style/EditText.DarkTheme"
+            android:background="@drawable/button_white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutNewBiography"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="18dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutNewName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- TextView "Biography" -->
+        <TextView
+            android:id="@+id/newBiographyLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/biography"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_gravity="left"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="2dp"/>
+
+        <!-- EditText "Biography" -->
+        <EditText
+            android:id="@+id/newBiographyEditText"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_new_biography"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:gravity="center_vertical"

@@ -27,5 +27,8 @@
     <string name="search">Search …</string>
     <string name="edit_profile">Edit profile</string>
     <string name="save">Save</string>
-    <string name="enter_new_username">Enter a new username</string>
+    <string name="enter_new_username">Enter a username</string>
+    <string name="biography">Biography</string>
+    <string name="enter_new_biography">Enter a biography</string>
+    <string name="enter_new_name">Enter a name</string>
 </resources>
