@@ -6,4 +6,163 @@
     android:layout_height="match_parent"
     tools:context=".ui.user.UserEdit">
 
+    <LinearLayout
+        android:id="@+id/navigationBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/editProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="@string/edit_profile"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_weight="1"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/saveChange"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/save"
+            android:fontFamily="@font/kollektif"
+            android:textSize="18sp"
+            android:background="@drawable/button_purple"
+            android:outlineProvider="none"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/banner"
+        android:layout_width="0dp"
+        android:layout_height="140dp"
+        android:background="@color/light_blue_gray"
+        app:layout_constraintTop_toBottomOf="@id/navigationBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/cameraIconBanner"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_photo"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="@id/banner"
+        app:layout_constraintTop_toTopOf="@id/banner"
+        app:layout_constraintBottom_toBottomOf="@id/banner"
+        app:layout_constraintEnd_toEndOf="@id/banner"
+        android:layout_margin="8dp" />
+
+    <ImageView
+        android:id="@+id/editUserCircle"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/circular_button"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/banner"
+        app:layout_constraintBottom_toBottomOf="@id/banner"
+        android:layout_marginStart="20dp" />
+
+    <ImageView
+        android:id="@+id/cameraIconProfile"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_photo"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="@id/editUserCircle"
+        app:layout_constraintTop_toTopOf="@id/editUserCircle"
+        app:layout_constraintBottom_toBottomOf="@id/editUserCircle"
+        app:layout_constraintEnd_toEndOf="@id/editUserCircle"
+        android:layout_margin="8dp" />
+
+    <LinearLayout
+        android:id="@+id/linearLayoutNewUsername"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="18dp"
+        app:layout_constraintTop_toBottomOf="@id/editUserCircle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- TextView "Username" -->
+        <TextView
+            android:id="@+id/newUsernameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/username"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_gravity="left"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="2dp"/>
+
+        <!-- EditText "Username" -->
+        <EditText
+            android:id="@+id/newUsernameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_new_username"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/kollektif"
+            android:textSize="15sp"
+            style="@style/EditText.DarkTheme"
+            android:background="@drawable/button_white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutNewName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="18dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutNewUsername"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- TextView "Username" -->
+        <TextView
+            android:id="@+id/newNameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/first_name"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_gravity="left"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="2dp"/>
+
+        <!-- EditText "Username" -->
+        <EditText
+            android:id="@+id/newNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_new_username"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/kollektif"
+            android:textSize="15sp"
+            style="@style/EditText.DarkTheme"
+            android:background="@drawable/button_white"/>
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

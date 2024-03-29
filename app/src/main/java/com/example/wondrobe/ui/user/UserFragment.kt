@@ -1,21 +1,21 @@
 package com.example.wondrobe.ui.user
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
+import com.example.wondrobe.R
 import com.example.wondrobe.databinding.FragmentUserBinding
 import com.google.firebase.firestore.FirebaseFirestore
-import javax.sql.DataSource
 
 class UserFragment : Fragment() {
 
@@ -40,6 +40,10 @@ class UserFragment : Fragment() {
             loadUserDetails()
         } else {
             updateUI()
+        }
+
+        binding.editProfileButton.setOnClickListener {
+            redirectToEditUser()
         }
 
         return root
@@ -78,7 +82,7 @@ class UserFragment : Fragment() {
         binding.textViewName.text = firstName
         binding.textViewUsername.text = formattedUsername
 
-        showAlertDialog(photoUrl)
+        //showAlertDialog(photoUrl)
         // Verificar si el usuario tiene una foto de perfil
         if (photoUrl.isNotEmpty()) {
             // Cargar la imagen de perfil y aplicar la máscara circular
@@ -92,7 +96,7 @@ class UserFragment : Fragment() {
                         isFirstResource: Boolean
                     ): Boolean {
                         // Manejar el error al cargar la imagen
-                        showAlertToast("Error loading image: ${e?.message}")
+                        //showAlertToast("Error loading image: ${e?.message}")
                         return false
                     }
 
@@ -103,7 +107,7 @@ class UserFragment : Fragment() {
                         dataSource: com.bumptech.glide.load.DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        showAlertToast("Imagen carga bien")
+                        //showAlertToast("Imagen carga bien")
                         return false
                     }
 
@@ -117,16 +121,14 @@ class UserFragment : Fragment() {
         binding.textViewUsername.visibility = View.VISIBLE
     }
 
-    private fun showAlertToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun redirectToEditUser() {
+        val intent = Intent(activity, UserEdit::class.java)
+        startActivity(intent)
+        activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 
-    private fun showAlertDialog(message: String) {
-        val alertDialogBuilder = AlertDialog.Builder(requireContext())
-        alertDialogBuilder.setMessage(message)
-        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-        val alertDialog = alertDialogBuilder.create()
-        alertDialog.show()
+    private fun showAlertToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {

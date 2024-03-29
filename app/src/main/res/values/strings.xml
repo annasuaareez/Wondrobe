@@ -26,4 +26,6 @@
     <string name="default_web_client_id">172335089066-h9saq08h5dms9aaalio8bgepr1q7aou3.apps.googleusercontent.com</string>
     <string name="search">Search …</string>
     <string name="edit_profile">Edit profile</string>
+    <string name="save">Save</string>
+    <string name="enter_new_username">Enter a new username</string>
 </resources>
