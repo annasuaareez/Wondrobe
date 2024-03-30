@@ -31,4 +31,6 @@
     <string name="biography">Biography</string>
     <string name="enter_new_biography">Enter a biography</string>
     <string name="enter_new_name">Enter a name</string>
+    <string name="take_photo">Take a photo</string>
+    <string name="existing_photo">Take an existing photo</string>
 </resources>

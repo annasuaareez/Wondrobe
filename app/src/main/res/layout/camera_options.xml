@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnTakePhoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/take_photo"
+        android:background="@drawable/button_white"
+        android:textColor="@color/black"
+        android:layout_margin="8dp"
+        android:padding="8dp"
+        android:elevation="4dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnChoosePhoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/existing_photo"
+        android:background="@drawable/button_white"
+        android:textColor="@color/black"
+        android:padding="8dp"
+        android:layout_margin="8dp"
+        android:elevation="4dp"/>
+
+</LinearLayout>

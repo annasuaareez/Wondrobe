@@ -109,7 +109,7 @@ class LogIn : AppCompatActivity() {
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
-                showAlertToast("Google sign in failed: ${e.message}")
+                //showAlertToast("Google sign in failed: ${e.message}")
             }
         }
     }
@@ -182,30 +182,6 @@ class LogIn : AppCompatActivity() {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
         return networkInfo != null && networkInfo.isConnected
-    }
-
-    private fun saveUserIdByEmail(email: String) {
-        val db = FirebaseFirestore.getInstance()
-        val usersCollection = db.collection("users")
-
-        usersCollection.whereEqualTo("email", email)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    // Se encontró un usuario con el correo electrónico, guardar su ID
-                    val userId = documents.documents[0].id
-                    saveUserId(userId)
-                    showAlertToast("Successful login")
-                    redirectToMainPage()
-                } else {
-                    // No se encontró ningún usuario con el correo electrónico
-                    showAlertToast("User not found in database")
-                }
-            }
-            .addOnFailureListener { e ->
-                // Manejar errores de Firestore
-                showAlertToast("Error retrieving user data: ${e.message}")
-            }
     }
 
     private fun checkIfUserExistsInFirestore(email: String) {
