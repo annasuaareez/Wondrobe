@@ -27,6 +27,7 @@ class UserFragment : Fragment() {
     private lateinit var username: String
     private lateinit var biography: String
     private lateinit var photoUrl: String
+    private lateinit var bannerUrl: String
     private var userDetailsLoaded = false // Indica si los detalles del usuario ya han sido cargados
 
     override fun onCreateView(
@@ -37,18 +38,21 @@ class UserFragment : Fragment() {
         _binding = FragmentUserBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Verificar si los detalles del usuario ya se han cargado previamente
-        if (!userDetailsLoaded) {
-            loadUserDetails()
-        } else {
-            updateUI()
-        }
-
         binding.editProfileButton.setOnClickListener {
             redirectToEditUser()
         }
 
         return root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Actualizar los detalles del usuario cada vez que se muestre el fragmento
+        if (!userDetailsLoaded) {
+            loadUserDetails()
+        } else {
+            updateUI()
+        }
     }
 
     private fun loadUserDetails() {
@@ -66,11 +70,14 @@ class UserFragment : Fragment() {
                     username = document.getString("username") ?: ""
                     biography = document.getString("biography") ?: ""
                     photoUrl = document.getString("profileImage") ?: ""
+                    bannerUrl = document.getString("bannerImage") ?: ""
 
                     // Indicar que los detalles del usuario han sido cargados
                     userDetailsLoaded = true
 
+                    // Actualizar la interfaz de usuario incluyendo la foto
                     updateUI()
+
                 } else {
                     showAlertToast("User details not found.")
                 }
@@ -90,6 +97,7 @@ class UserFragment : Fragment() {
         // Verificar si el usuario tiene una foto de perfil
         if (photoUrl.isNotEmpty()) {
             // Cargar la imagen de perfil y aplicar la máscara circular
+            Glide.with(requireContext()).clear(binding.circle)
             Glide.with(requireContext())
                 .load(photoUrl)
                 .listener(object : RequestListener<Drawable> {
@@ -118,6 +126,45 @@ class UserFragment : Fragment() {
                 })
                 .transform(CircleCrop())
                 .into(binding.circle)
+
+            // Forzar la actualización de la vista después de cargar la imagen
+            binding.circle.invalidate()
+        }
+
+        // Verificar si el usuario tiene un banner
+        if (bannerUrl.isNotEmpty()) {
+            // Cargar la imagen de perfil y aplicar la máscara circular
+            Glide.with(requireContext()).clear(binding.banner)
+            Glide.with(requireContext())
+                .load(bannerUrl)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        // Manejar el error al cargar la imagen
+                        //showAlertToast("Error loading image: ${e?.message}")
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable>?,
+                        dataSource: com.bumptech.glide.load.DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        //showAlertToast("Imagen carga bien")
+                        return false
+                    }
+
+                })
+                .into(binding.banner)
+
+            // Forzar la actualización de la vista después de cargar la imagen
+            binding.banner.invalidate()
         }
 
         // Mostrar los TextView una vez que se han cargado los datos del usuario
@@ -144,20 +191,7 @@ class UserFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_EDIT_USER && resultCode == Activity.RESULT_OK) {
-            // Obtener los datos actualizados
-            val newUsername = data?.getStringExtra("username")
-            val newFirstName = data?.getStringExtra("firstName")
-            val newBiography = data?.getStringExtra("biography")
-            val newPhotoUrl = data?.getStringExtra("photoUrl")
-
-            // Actualizar la interfaz de usuario con los nuevos datos
-            if (newUsername != null && newFirstName != null && newBiography != null && newPhotoUrl != null) {
-                username = newUsername
-                firstName = newFirstName
-                biography = newBiography
-                photoUrl = newPhotoUrl
-                updateUI()
-            }
+            loadUserDetails()
         }
     }
 

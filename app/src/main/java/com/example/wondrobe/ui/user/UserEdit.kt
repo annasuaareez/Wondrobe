@@ -33,15 +33,22 @@ class UserEdit : AppCompatActivity() {
     private val PROFILE_CAMERA_REQUEST_CODE = 101
     private val PROFILE_GALLERY_REQUEST_CODE = 102
 
+    private val CAMERA_PERMISSION_CODE_BANNER = 103
+    private val PROFILE_CAMERA_REQUEST_CODE_BANNER = 104
+    private val PROFILE_GALLERY_REQUEST_CODE_BANNER = 105
+
     private lateinit var binding: ActivityUserEditBinding
     private lateinit var userId: String
     private lateinit var firstName: String
     private lateinit var username: String
     private lateinit var biography: String
     private lateinit var photoUrl: String
+    private lateinit var bannerUrl: String
 
     private var cameraOptionsDialog: Dialog? = null
+    private var cameraOptionsDialogBanner: Dialog? = null
     private var newPhotoBitmap: Bitmap? = null
+    private var newBannerBitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +62,7 @@ class UserEdit : AppCompatActivity() {
         }
 
         binding.cameraIconBanner.setOnClickListener {
-
+            showBannerOptionsDialog()
         }
 
         binding.saveChange.setOnClickListener {
@@ -91,6 +98,7 @@ class UserEdit : AppCompatActivity() {
                     username = document.getString("username") ?: ""
                     biography = document.getString("biography") ?: ""
                     photoUrl = document.getString("profileImage") ?: ""
+                    bannerUrl = document.getString("bannerImage") ?: ""
 
                     // Actualizar los EditText con los valores recuperados
                     binding.newNameEditText.setText(firstName)
@@ -129,6 +137,38 @@ class UserEdit : AppCompatActivity() {
                             .transform(CircleCrop())
                             .into(binding.editUserCircle)
                     }
+
+                    // Cargar la imagen del banner si existe
+                    if (bannerUrl.isNotEmpty()) {
+                        // Cargar la imagen de perfil y aplicar la máscara circular
+                        Glide.with(this)
+                            .load(bannerUrl)
+                            .listener(object : RequestListener<Drawable> {
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: com.bumptech.glide.request.target.Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    // Manejar el error al cargar la imagen
+                                    //showAlertToast("Error loading image: ${e?.message}")
+                                    return false
+                                }
+
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: com.bumptech.glide.request.target.Target<Drawable>?,
+                                    dataSource: com.bumptech.glide.load.DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    //showAlertToast("Imagen carga bien")
+                                    return false
+                                }
+
+                            })
+                            .into(binding.banner)
+                    }
                 } else {
                     showAlertToast("User details not found.")
                 }
@@ -139,10 +179,14 @@ class UserEdit : AppCompatActivity() {
     }
 
     private fun validateInputs(username: String, firstName: String, biography: String): Boolean {
-        if (username.isBlank() || firstName.isBlank()) {
+        val trimmedUsername = username.trim()
+        val trimmedFirstName = firstName.trim()
+        val trimmedBiography = biography.trim()
+
+        if (trimmedUsername.isEmpty() || trimmedFirstName.isEmpty()) {
             return false
         }
-        if (username.length > 20 || firstName.length > 40 || biography.length > 160) {
+        if (trimmedUsername.length > 20 || trimmedFirstName.length > 40 || trimmedBiography.length > 160) {
             return false
         }
         return true
@@ -161,7 +205,8 @@ class UserEdit : AppCompatActivity() {
                         "username" to username,
                         "firstName" to firstName,
                         "biography" to biography,
-                        "profileImage" to photoUrl
+                        "profileImage" to photoUrl,
+                        "bannerImage" to bannerUrl
                     )
 
                     usersCollection.document(userId)
@@ -174,11 +219,16 @@ class UserEdit : AppCompatActivity() {
                                 savePhotoToFirebaseStorage(it)
                             }
 
+                            newBannerBitmap?.let {
+                                saveBannerToFirebaseStorage(it)
+                            }
+
                             val resultIntent = Intent()
                             resultIntent.putExtra("username", username)
                             resultIntent.putExtra("firstName", firstName)
                             resultIntent.putExtra("biography", biography)
-                            resultIntent.putExtra("photoUrl", photoUrl)
+                            resultIntent.putExtra("profileImage", photoUrl)
+                            resultIntent.putExtra("bannerImage", bannerUrl)
                             setResult(Activity.RESULT_OK, resultIntent)
                             finish()
                         }
@@ -202,7 +252,8 @@ class UserEdit : AppCompatActivity() {
         val user = hashMapOf<String,Any>(
             "firstName" to firstName,
             "biography" to biography,
-            "profileImage" to photoUrl
+            "profileImage" to photoUrl,
+            "bannerImage" to bannerUrl
         )
 
         usersCollection.document(userId)
@@ -215,11 +266,16 @@ class UserEdit : AppCompatActivity() {
                     savePhotoToFirebaseStorage(it)
                 }
 
+                newBannerBitmap?.let {
+                    saveBannerToFirebaseStorage(it)
+                }
+
                 val resultIntent = Intent()
                 resultIntent.putExtra("username", username)
                 resultIntent.putExtra("firstName", firstName)
                 resultIntent.putExtra("biography", biography)
-                resultIntent.putExtra("photoUrl", photoUrl)
+                resultIntent.putExtra("profileImage", photoUrl)
+                resultIntent.putExtra("bannerImage", bannerUrl)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -250,15 +306,54 @@ class UserEdit : AppCompatActivity() {
         }
     }
 
+    private fun saveBannerToFirebaseStorage(bitmap: Bitmap) {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imagesRef = storageRef.child("/users/${userId}/profile/photo_banner.jpg")
+
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = imagesRef.putBytes(data)
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            imagesRef.downloadUrl.addOnSuccessListener { uri ->
+                bannerUrl = uri.toString()
+                // Guardar la URL de la foto en la base de datos de Firebase Firestore
+                saveBannerUrlToFirestore(bannerUrl)
+            }.addOnFailureListener {
+                showAlertToast("Error getting photo URL: ${it.message}")
+            }
+        }.addOnFailureListener { exception ->
+            showAlertToast("Error uploading photo: ${exception.message}")
+        }
+    }
+
     private fun savePhotoUrlToFirestore(photoUrl: String) {
         val db = FirebaseFirestore.getInstance()
         val usersCollection = db.collection("users")
         val userUpdate = hashMapOf<String, Any>("profileImage" to photoUrl)
+
         usersCollection.document(userId)
             .update(userUpdate)
             .addOnSuccessListener {
-                showAlertToast("Profile photo updated successfully.")
+                //showAlertToast("Profile photo updated successfully.")
                 newPhotoBitmap = null
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error updating profile photo URL: ${e.message}")
+            }
+    }
+
+    private fun saveBannerUrlToFirestore(bannerUrl: String) {
+        val db = FirebaseFirestore.getInstance()
+        val usersCollection = db.collection("users")
+        val userUpdate = hashMapOf<String, Any>("bannerImage" to bannerUrl)
+
+        usersCollection.document(userId)
+            .update(userUpdate)
+            .addOnSuccessListener {
+                //showAlertToast("Profile photo updated successfully.")
+                newBannerBitmap = null
             }
             .addOnFailureListener { e ->
                 showAlertToast("Error updating profile photo URL: ${e.message}")
@@ -275,7 +370,7 @@ class UserEdit : AppCompatActivity() {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
                 } else {
-                    openCamera()
+                    openCameraProfile()
                 }
                 cameraOptionsDialog?.dismiss()
             }
@@ -284,7 +379,7 @@ class UserEdit : AppCompatActivity() {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), PROFILE_GALLERY_REQUEST_CODE)
                 } else {
-                    openGallery()
+                    openGalleryProfile()
                 }
                 cameraOptionsDialog?.dismiss()
             }
@@ -297,12 +392,44 @@ class UserEdit : AppCompatActivity() {
         cameraOptionsDialog?.show()
     }
 
-    private fun openCamera() {
+    private fun showBannerOptionsDialog() {
+        if (cameraOptionsDialogBanner == null) {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.camera_options, null)
+            val takePhotoButton = dialogView.findViewById<Button>(R.id.btnTakePhoto)
+            val choosePhotoButton = dialogView.findViewById<Button>(R.id.btnChoosePhoto)
+
+            takePhotoButton.setOnClickListener {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE_BANNER)
+                } else {
+                    openCameraBanner()
+                }
+                cameraOptionsDialogBanner?.dismiss()
+            }
+
+            choosePhotoButton.setOnClickListener {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), PROFILE_GALLERY_REQUEST_CODE_BANNER)
+                } else {
+                    openGalleryBanner()
+                }
+                cameraOptionsDialogBanner?.dismiss()
+            }
+
+            cameraOptionsDialogBanner = Dialog(this)
+            cameraOptionsDialogBanner?.setContentView(dialogView)
+            cameraOptionsDialogBanner?.setCancelable(true)
+        }
+
+        cameraOptionsDialogBanner?.show()
+    }
+
+    private fun openCameraProfile() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         startActivityForResult(takePictureIntent, PROFILE_CAMERA_REQUEST_CODE)
     }
 
-    private fun openGallery() {
+    private fun openGalleryProfile() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), PROFILE_GALLERY_REQUEST_CODE)
         } else {
@@ -311,51 +438,17 @@ class UserEdit : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                PROFILE_CAMERA_REQUEST_CODE -> {
-                    val imageBitmap = data?.extras?.get("data") as Bitmap
-                    // Aplicar máscara circular a la imagen
-                    Glide.with(this)
-                        .load(imageBitmap)
-                        .transform(CircleCrop())
-                        .into(binding.editUserCircle)
-
-                    // Guardar la foto en una variable de miembro de la clase para guardarla posteriormente si se presiona el botón de guardar
-                    newPhotoBitmap = imageBitmap
-                }
-                PROFILE_GALLERY_REQUEST_CODE -> {
-                    val imageUri = data?.data
-                    val imageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
-                    // Aplicar máscara circular a la imagen
-                    Glide.with(this)
-                        .load(imageBitmap)
-                        .transform(CircleCrop())
-                        .into(binding.editUserCircle)
-
-                    // Guardar la foto en una variable de miembro de la clase para guardarla posteriormente si se presiona el botón de guardar
-                    newPhotoBitmap = imageBitmap
-                }
-            }
-        }
+    private fun openCameraBanner() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(takePictureIntent, PROFILE_CAMERA_REQUEST_CODE_BANNER)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera()
-            } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
-            }
-        } else if (requestCode == PROFILE_GALLERY_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGallery()
-            } else {
-                Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show()
-            }
+    private fun openGalleryBanner() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), PROFILE_GALLERY_REQUEST_CODE_BANNER)
+        } else {
+            val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(pickPhotoIntent, PROFILE_GALLERY_REQUEST_CODE_BANNER)
         }
     }
 
@@ -370,6 +463,88 @@ class UserEdit : AppCompatActivity() {
 
     private fun showAlertToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                PROFILE_CAMERA_REQUEST_CODE -> {
+                    val imageBitmap = data?.extras?.get("data") as Bitmap
+                    // Aplicar máscara circular a la imagen
+                    Glide.with(this)
+                        .load(imageBitmap)
+                        .transform(CircleCrop())
+                        .into(binding.editUserCircle)
+
+                    // Guardar la foto en una variable para guardarla si se presiona el botón de guardar
+                    newPhotoBitmap = imageBitmap
+                }
+                PROFILE_GALLERY_REQUEST_CODE -> {
+                    val imageUri = data?.data
+                    val imageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+                    // Aplicar máscara circular a la imagen
+                    Glide.with(this)
+                        .load(imageBitmap)
+                        .transform(CircleCrop())
+                        .into(binding.editUserCircle)
+
+                    // Guardar la foto en una variable para guardarla si se presiona el botón de guardar
+                    newPhotoBitmap = imageBitmap
+                }
+
+                PROFILE_CAMERA_REQUEST_CODE_BANNER -> {
+                    val imageBitmap = data?.extras?.get("data") as Bitmap
+                    // Aplicar máscara circular a la imagen
+                    Glide.with(this)
+                        .load(imageBitmap)
+                        .into(binding.banner)
+
+                    // Guardar la foto en una variable para guardarla si se presiona el botón de guardar
+                    newBannerBitmap = imageBitmap
+                }
+                PROFILE_GALLERY_REQUEST_CODE_BANNER -> {
+                    val imageUri = data?.data
+                    val imageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+                    // Aplicar máscara circular a la imagen
+                    Glide.with(this)
+                        .load(imageBitmap)
+                        .into(binding.banner)
+
+                    // Guardar la foto en una variable para guardarla si se presiona el botón de guardar
+                    newBannerBitmap = imageBitmap
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCameraProfile()
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+            }
+        } else if (requestCode == PROFILE_GALLERY_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGalleryProfile()
+            } else {
+                Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show()
+            }
+        } else if (requestCode == CAMERA_PERMISSION_CODE_BANNER) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCameraBanner()
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+            }
+        } else if (requestCode == PROFILE_GALLERY_REQUEST_CODE_BANNER) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGalleryBanner()
+            } else {
+                Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroy() {

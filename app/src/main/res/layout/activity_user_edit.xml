@@ -43,11 +43,12 @@
 
     </LinearLayout>
 
-    <View
+    <ImageView
         android:id="@+id/banner"
         android:layout_width="0dp"
-        android:layout_height="140dp"
+        android:layout_height="145dp"
         android:background="@color/light_blue_gray"
+        android:scaleType="centerCrop"
         app:layout_constraintTop_toBottomOf="@id/navigationBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
