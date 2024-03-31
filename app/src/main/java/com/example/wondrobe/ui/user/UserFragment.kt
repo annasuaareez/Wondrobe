@@ -148,12 +148,14 @@ class UserFragment : Fragment() {
             val newUsername = data?.getStringExtra("username")
             val newFirstName = data?.getStringExtra("firstName")
             val newBiography = data?.getStringExtra("biography")
+            val newPhotoUrl = data?.getStringExtra("photoUrl")
 
             // Actualizar la interfaz de usuario con los nuevos datos
-            if (newUsername != null && newFirstName != null && newBiography != null) {
+            if (newUsername != null && newFirstName != null && newBiography != null && newPhotoUrl != null) {
                 username = newUsername
                 firstName = newFirstName
                 biography = newBiography
+                photoUrl = newPhotoUrl
                 updateUI()
             }
         }

@@ -23,6 +23,8 @@ import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.ActivityUserEditBinding
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayOutputStream
 
 class UserEdit : AppCompatActivity() {
 
@@ -39,6 +41,7 @@ class UserEdit : AppCompatActivity() {
     private lateinit var photoUrl: String
 
     private var cameraOptionsDialog: Dialog? = null
+    private var newPhotoUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,19 +140,9 @@ class UserEdit : AppCompatActivity() {
 
     private fun validateInputs(username: String, firstName: String, biography: String): Boolean {
         if (username.isBlank() || firstName.isBlank()) {
-            //Toast.makeText(this, "Username and First Name cannot be empty.", Toast.LENGTH_SHORT).show()
             return false
         }
-        if (username.length > 20) {
-            //Toast.makeText(this, "Username cannot exceed 40 characters.", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (firstName.length > 40) {
-            //Toast.makeText(this, "First Name cannot exceed 40 characters.", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (biography.length > 160) {
-            //Toast.makeText(this, "Biography cannot exceed 160 characters.", Toast.LENGTH_SHORT).show()
+        if (username.length > 20 || firstName.length > 40 || biography.length > 160) {
             return false
         }
         return true
@@ -167,18 +160,21 @@ class UserEdit : AppCompatActivity() {
                     val user = hashMapOf<String, Any>(
                         "username" to username,
                         "firstName" to firstName,
-                        "biography" to biography
-                        // Agrega aquí los demás campos que desees actualizar
+                        "biography" to biography,
+                        "profileImage" to photoUrl
                     )
 
                     usersCollection.document(userId)
                         .update(user)
                         .addOnSuccessListener {
                             showAlertToast("User data updated successfully.")
+                            savePhotoUrlToFirestore()
+
                             val resultIntent = Intent()
                             resultIntent.putExtra("username", username)
                             resultIntent.putExtra("firstName", firstName)
                             resultIntent.putExtra("biography", biography)
+                            resultIntent.putExtra("photoUrl", newPhotoUrl)
                             setResult(Activity.RESULT_OK, resultIntent)
                             finish()
                         }
@@ -201,18 +197,21 @@ class UserEdit : AppCompatActivity() {
 
         val user = hashMapOf<String,Any>(
             "firstName" to firstName,
-            "biography" to biography
-            // Agrega aquí los demás campos que desees actualizar
+            "biography" to biography,
+            "profileImage" to photoUrl
         )
 
         usersCollection.document(userId)
             .update(user)
             .addOnSuccessListener {
                 showAlertToast("User data updated successfully.")
+                savePhotoUrlToFirestore()
+
                 val resultIntent = Intent()
                 resultIntent.putExtra("username", username)
                 resultIntent.putExtra("firstName", firstName)
                 resultIntent.putExtra("biography", biography)
+                resultIntent.putExtra("photoUrl", newPhotoUrl)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -221,17 +220,21 @@ class UserEdit : AppCompatActivity() {
             }
     }
 
-    private fun showAlertDialog(message: String) {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Invalid credentials")
-        alertDialogBuilder.setMessage(message)
-        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-        val alertDialog = alertDialogBuilder.create()
-        alertDialog.show()
-    }
-
-    private fun showAlertToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    private fun savePhotoUrlToFirestore() {
+        newPhotoUrl?.let { url ->
+            val db = FirebaseFirestore.getInstance()
+            val usersCollection = db.collection("users")
+            val userUpdate = hashMapOf<String, Any>("profileImage" to url)
+            usersCollection.document(userId)
+                .update(userUpdate)
+                .addOnSuccessListener {
+                    showAlertToast("Profile photo updated successfully.")
+                    newPhotoUrl = null
+                }
+                .addOnFailureListener { e ->
+                    showAlertToast("Error updating profile photo URL: ${e.message}")
+                }
+        }
     }
 
     private fun showPhotoOptionsDialog() {
@@ -291,6 +294,8 @@ class UserEdit : AppCompatActivity() {
                         .load(imageBitmap)
                         .transform(CircleCrop())
                         .into(binding.editUserCircle)
+
+                    savePhotoToFirestore(imageBitmap)
                 }
                 PROFILE_GALLERY_REQUEST_CODE -> {
                     val imageUri = data?.data
@@ -300,8 +305,30 @@ class UserEdit : AppCompatActivity() {
                         .load(imageBitmap)
                         .transform(CircleCrop())
                         .into(binding.editUserCircle)
+
+                    savePhotoToFirestore(imageBitmap)
                 }
             }
+        }
+    }
+
+    private fun savePhotoToFirestore(bitmap: Bitmap) {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imagesRef = storageRef.child("/users/${userId}/profile/photo_profile.jpg")
+
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = imagesRef.putBytes(data)
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            imagesRef.downloadUrl.addOnSuccessListener { uri ->
+                newPhotoUrl = uri.toString()
+            }.addOnFailureListener {
+                showAlertToast("Error getting photo URL: ${it.message}")
+            }
+        }.addOnFailureListener { exception ->
+            showAlertToast("Error uploading photo: ${exception.message}")
         }
     }
 
@@ -320,6 +347,19 @@ class UserEdit : AppCompatActivity() {
                 Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun showAlertDialog(message: String) {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Invalid credentials")
+        alertDialogBuilder.setMessage(message)
+        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun showAlertToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
