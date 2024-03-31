@@ -41,7 +41,7 @@ class UserEdit : AppCompatActivity() {
     private lateinit var photoUrl: String
 
     private var cameraOptionsDialog: Dialog? = null
-    private var newPhotoUrl: String? = null
+    private var newPhotoBitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -168,13 +168,17 @@ class UserEdit : AppCompatActivity() {
                         .update(user)
                         .addOnSuccessListener {
                             showAlertToast("User data updated successfully.")
-                            savePhotoUrlToFirestore()
+
+                            // Guardar la foto en el almacenamiento de Firebase y obtener la URL
+                            newPhotoBitmap?.let {
+                                savePhotoToFirebaseStorage(it)
+                            }
 
                             val resultIntent = Intent()
                             resultIntent.putExtra("username", username)
                             resultIntent.putExtra("firstName", firstName)
                             resultIntent.putExtra("biography", biography)
-                            resultIntent.putExtra("photoUrl", newPhotoUrl)
+                            resultIntent.putExtra("photoUrl", photoUrl)
                             setResult(Activity.RESULT_OK, resultIntent)
                             finish()
                         }
@@ -186,7 +190,7 @@ class UserEdit : AppCompatActivity() {
                     showAlertDialog("Username already exists. Please choose a different one.")
                 }
             }
-            .addOnFailureListener {e ->
+            .addOnFailureListener { e ->
                 showAlertToast("Error checking username availability: ${e.message}")
             }
     }
@@ -205,13 +209,17 @@ class UserEdit : AppCompatActivity() {
             .update(user)
             .addOnSuccessListener {
                 showAlertToast("User data updated successfully.")
-                savePhotoUrlToFirestore()
+
+                // Guardar la foto en el almacenamiento de Firebase y obtener la URL
+                newPhotoBitmap?.let {
+                    savePhotoToFirebaseStorage(it)
+                }
 
                 val resultIntent = Intent()
                 resultIntent.putExtra("username", username)
                 resultIntent.putExtra("firstName", firstName)
                 resultIntent.putExtra("biography", biography)
-                resultIntent.putExtra("photoUrl", newPhotoUrl)
+                resultIntent.putExtra("photoUrl", photoUrl)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -220,21 +228,41 @@ class UserEdit : AppCompatActivity() {
             }
     }
 
-    private fun savePhotoUrlToFirestore() {
-        newPhotoUrl?.let { url ->
-            val db = FirebaseFirestore.getInstance()
-            val usersCollection = db.collection("users")
-            val userUpdate = hashMapOf<String, Any>("profileImage" to url)
-            usersCollection.document(userId)
-                .update(userUpdate)
-                .addOnSuccessListener {
-                    showAlertToast("Profile photo updated successfully.")
-                    newPhotoUrl = null
-                }
-                .addOnFailureListener { e ->
-                    showAlertToast("Error updating profile photo URL: ${e.message}")
-                }
+    private fun savePhotoToFirebaseStorage(bitmap: Bitmap) {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imagesRef = storageRef.child("/users/${userId}/profile/photo_profile.jpg")
+
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = imagesRef.putBytes(data)
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            imagesRef.downloadUrl.addOnSuccessListener { uri ->
+                photoUrl = uri.toString()
+                // Guardar la URL de la foto en la base de datos de Firebase Firestore
+                savePhotoUrlToFirestore(photoUrl)
+            }.addOnFailureListener {
+                showAlertToast("Error getting photo URL: ${it.message}")
+            }
+        }.addOnFailureListener { exception ->
+            showAlertToast("Error uploading photo: ${exception.message}")
         }
+    }
+
+    private fun savePhotoUrlToFirestore(photoUrl: String) {
+        val db = FirebaseFirestore.getInstance()
+        val usersCollection = db.collection("users")
+        val userUpdate = hashMapOf<String, Any>("profileImage" to photoUrl)
+        usersCollection.document(userId)
+            .update(userUpdate)
+            .addOnSuccessListener {
+                showAlertToast("Profile photo updated successfully.")
+                newPhotoBitmap = null
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error updating profile photo URL: ${e.message}")
+            }
     }
 
     private fun showPhotoOptionsDialog() {
@@ -295,7 +323,8 @@ class UserEdit : AppCompatActivity() {
                         .transform(CircleCrop())
                         .into(binding.editUserCircle)
 
-                    savePhotoToFirestore(imageBitmap)
+                    // Guardar la foto en una variable de miembro de la clase para guardarla posteriormente si se presiona el botón de guardar
+                    newPhotoBitmap = imageBitmap
                 }
                 PROFILE_GALLERY_REQUEST_CODE -> {
                     val imageUri = data?.data
@@ -306,29 +335,10 @@ class UserEdit : AppCompatActivity() {
                         .transform(CircleCrop())
                         .into(binding.editUserCircle)
 
-                    savePhotoToFirestore(imageBitmap)
+                    // Guardar la foto en una variable de miembro de la clase para guardarla posteriormente si se presiona el botón de guardar
+                    newPhotoBitmap = imageBitmap
                 }
             }
-        }
-    }
-
-    private fun savePhotoToFirestore(bitmap: Bitmap) {
-        val storageRef = FirebaseStorage.getInstance().reference
-        val imagesRef = storageRef.child("/users/${userId}/profile/photo_profile.jpg")
-
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val data = baos.toByteArray()
-
-        val uploadTask = imagesRef.putBytes(data)
-        uploadTask.addOnSuccessListener { taskSnapshot ->
-            imagesRef.downloadUrl.addOnSuccessListener { uri ->
-                newPhotoUrl = uri.toString()
-            }.addOnFailureListener {
-                showAlertToast("Error getting photo URL: ${it.message}")
-            }
-        }.addOnFailureListener { exception ->
-            showAlertToast("Error uploading photo: ${exception.message}")
         }
     }
 
