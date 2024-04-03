@@ -33,4 +33,6 @@
     <string name="enter_new_name">Enter a name</string>
     <string name="take_photo">Take a photo</string>
     <string name="existing_photo">Take an existing photo</string>
+    <string name="delete_account">Delete account</string>
+    <string name="log_out">Log out</string>
 </resources>

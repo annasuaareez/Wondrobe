@@ -22,6 +22,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.ActivityUserEditBinding
+import com.example.wondrobe.ui.auth.LogIn
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayOutputStream
@@ -80,6 +82,10 @@ class UserEdit : AppCompatActivity() {
                     saveAdditionalUserData(newFirstName, newBiography)
                 }
             }
+        }
+
+        binding.deleteAccountButton.setOnClickListener {
+            deleteAccount()
         }
     }
 
@@ -449,6 +455,74 @@ class UserEdit : AppCompatActivity() {
         } else {
             val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(pickPhotoIntent, PROFILE_GALLERY_REQUEST_CODE_BANNER)
+        }
+    }
+
+    private fun deleteAccount() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Confirm Delete Account")
+        alertDialogBuilder.setMessage("Are you sure you want to delete your account?")
+        alertDialogBuilder.setPositiveButton("Yes") { dialog, _ ->
+            dialog.dismiss()
+            // Eliminar la cuenta y los datos asociados
+            deleteUserData()
+        }
+        alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
+            dialog.dismiss()
+        }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun deleteUserData() {
+        val db = FirebaseFirestore.getInstance()
+        val usersCollection = db.collection("users")
+
+        // Eliminar el documento del usuario del Cloud Firestore
+        usersCollection.document(userId)
+            .delete()
+            .addOnSuccessListener {
+                // Eliminar la cuenta de autenticación de Firebase
+                val user = FirebaseAuth.getInstance().currentUser
+                user?.delete()
+                    ?.addOnSuccessListener {
+                        showAlertToast("Account deleted successfully.")
+                        // Eliminar datos en el almacenamiento de Firebase si existen
+                        deleteStorageData()
+
+                        val intent = Intent(this, LogIn::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                        finish()
+                    }
+                    ?.addOnFailureListener { e ->
+                        showAlertToast("Error deleting account: ${e.message}")
+                    }
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error deleting user data: ${e.message}")
+            }
+    }
+
+    private fun deleteStorageData() {
+        // Eliminar datos en el almacenamiento de Firebase si existen
+        val storageRef = FirebaseStorage.getInstance().reference
+        val profileImageRef = storageRef.child("users/$userId/profile/photo_profile.jpg")
+        val bannerImageRef = storageRef.child("users/$userId/profile/photo_banner.jpg")
+
+        profileImageRef.delete().addOnSuccessListener {
+            // Foto de perfil eliminada correctamente
+        }.addOnFailureListener { e ->
+            // Error al eliminar la foto de perfil
+            showAlertToast("Error deleting profile photo: ${e.message}")
+        }
+
+        bannerImageRef.delete().addOnSuccessListener {
+            // Imagen del banner eliminada correctamente
+        }.addOnFailureListener { e ->
+            // Error al eliminar la imagen del banner
+            showAlertToast("Error deleting banner image: ${e.message}")
         }
     }
 
