@@ -87,6 +87,18 @@ class UserEdit : AppCompatActivity() {
         binding.deleteAccountButton.setOnClickListener {
             deleteAccount()
         }
+
+        binding.logOutButton.setOnClickListener {
+            // Cerrar la sesión del usuario
+            FirebaseAuth.getInstance().signOut()
+
+            // Iniciar la actividad de inicio de sesión (LogIn)
+            val intent = Intent(this, LogIn::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            finish()
+        }
     }
 
     private fun loadUserDetails() {
@@ -499,11 +511,24 @@ class UserEdit : AppCompatActivity() {
                     ?.addOnFailureListener { e ->
                         showAlertToast("Error deleting account: ${e.message}")
                     }
+                    ?: run {
+                        // Si el usuario no está autenticado, solo eliminamos los datos asociados en Firestore y Storage
+                        showAlertToast("Account deleted successfully.")
+                        // Eliminar datos en el almacenamiento de Firebase si existen
+                        deleteStorageData()
+
+                        val intent = Intent(this, LogIn::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                        finish()
+                    }
             }
             .addOnFailureListener { e ->
                 showAlertToast("Error deleting user data: ${e.message}")
             }
     }
+
 
     private fun deleteStorageData() {
         // Eliminar datos en el almacenamiento de Firebase si existen
