@@ -35,4 +35,6 @@
     <string name="existing_photo">Take an existing photo</string>
     <string name="delete_account">Delete account</string>
     <string name="log_out">Log out</string>
+    <string name="for_you">For you</string>
+    <string name="following">Following</string>
 </resources>

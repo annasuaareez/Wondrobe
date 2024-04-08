@@ -6,8 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.wondrobe.databinding.FragmentAddBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class AddFragment : Fragment() {
+class AddFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentAddBinding? = null
 
     // This property is only valid between onCreateView and

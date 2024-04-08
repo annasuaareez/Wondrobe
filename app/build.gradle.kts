@@ -60,6 +60,9 @@ dependencies {
     //Glide es una biblioteca de carga y visualización de imágenes para Android que simplifica el proceso de cargar imágenes desde diversos orígenes
     implementation("com.github.bumptech.glide:glide:4.12.0")
     implementation("com.google.firebase:firebase-storage:20.3.0")
+    //implementation("com.android.car.ui:car-ui-lib:2.6.0")
+    //Google Material Design
+    implementation("com.google.android.material:material:1.11.0")
 
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     testImplementation("junit:junit:4.13.2")
