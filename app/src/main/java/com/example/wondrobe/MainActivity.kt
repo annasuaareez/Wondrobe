@@ -1,7 +1,9 @@
 package com.example.wondrobe
 
+import android.graphics.PorterDuff
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.onNavDestinationSelected
@@ -9,6 +11,8 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.wondrobe.databinding.ActivityMainBinding
 import com.example.wondrobe.ui.add.AddFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomnavigation.LabelVisibilityMode
+import com.google.android.material.navigation.NavigationBarView
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +36,9 @@ class MainActivity : AppCompatActivity() {
 
         binding.navView.setupWithNavController(navController)
 
+        // Ocultar los títulos y mostrar solo los iconos en la barra de navegación
+        binding.navView.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_UNLABELED
+
         binding.navView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_add -> {
@@ -45,6 +52,21 @@ class MainActivity : AppCompatActivity() {
                     item.onNavDestinationSelected(navController)
                 }
             }
+        }
+
+        binding.navView.setOnItemReselectedListener { menuItem ->
+            // Restablece el tinte de todos los íconos a su color predeterminado
+            for (i in 0 until binding.navView.menu.size()) {
+                val item = binding.navView.menu.getItem(i)
+                val icon = item.icon
+                icon?.clearColorFilter()
+            }
+
+            // Aplicar un tinte de color al ícono seleccionado
+            val icon = menuItem.icon
+            icon?.setColorFilter(ContextCompat.getColor(this, R.color.light_blue_gray), PorterDuff.Mode.SRC_IN)
+
+            true
         }
     }
 }

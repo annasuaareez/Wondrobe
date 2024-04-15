@@ -207,12 +207,39 @@ class UserEdit : AppCompatActivity() {
         if (trimmedUsername.length > 20 || trimmedFirstName.length > 40 || trimmedBiography.length > 160) {
             return false
         }
+        if (containsWhiteSpace(trimmedUsername)) {
+            return false
+        }
+        if (containsEmojis(trimmedUsername)) {
+            return false
+        }
         return true
+    }
+
+    private fun containsWhiteSpace(text: String): Boolean {
+        return text.contains(" ")
+    }
+
+    private fun containsEmojis(text: String): Boolean {
+        val emojiRegex = Regex("[\\p{So}]")
+        return emojiRegex.containsMatchIn(text)
     }
 
     private fun saveUserData(username: String, firstName: String, biography: String) {
         val db = FirebaseFirestore.getInstance()
         val usersCollection = db.collection("users")
+
+        // Verificar si el nuevo nombre de usuario es diferente al nombre de usuario actual
+        if (username != this.username) {
+            if (containsWhiteSpace(username)) {
+                showAlertDialog("Username cannot contain trailing or leading spaces.")
+                return
+            }
+            if (containsEmojis(username)) {
+                showAlertDialog("Username cannot contain emojis.")
+                return
+            }
+        }
 
         usersCollection.whereEqualTo("username", username)
             .get()
@@ -266,6 +293,18 @@ class UserEdit : AppCompatActivity() {
     private fun saveAdditionalUserData(firstName: String, biography: String) {
         val db = FirebaseFirestore.getInstance()
         val usersCollection = db.collection("users")
+
+        // Verificar si el nuevo nombre de usuario es diferente al nombre de usuario actual
+        if (username != this.username) {
+            if (containsWhiteSpace(username)) {
+                showAlertDialog("Username cannot contain trailing or leading spaces.")
+                return
+            }
+            if (containsEmojis(username)) {
+                showAlertDialog("Username cannot contain emojis.")
+                return
+            }
+        }
 
         val user = hashMapOf<String,Any>(
             "firstName" to firstName,
@@ -528,7 +567,6 @@ class UserEdit : AppCompatActivity() {
                 showAlertToast("Error deleting user data: ${e.message}")
             }
     }
-
 
     private fun deleteStorageData() {
         // Eliminar datos en el almacenamiento de Firebase si existen

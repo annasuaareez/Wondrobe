@@ -1,10 +1,10 @@
 package com.example.wondrobe.ui.add
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.FragmentManager
 import com.example.wondrobe.databinding.FragmentAddBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -23,11 +23,25 @@ class AddFragment : BottomSheetDialogFragment() {
         _binding = FragmentAddBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        binding.closeAddFragment.setOnClickListener {
+            dismiss() // Cierra el fragmento
+        }
+
+        isCancelable = false
+
         return root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun show(manager: FragmentManager, tag: String?) {
+        // Verificar si el fragmento ya está añadido
+        val fragmentByTag = manager.findFragmentByTag(tag)
+        if (fragmentByTag == null || !fragmentByTag.isAdded) {
+            super.show(manager, tag)
+        }
     }
 }

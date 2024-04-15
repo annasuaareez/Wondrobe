@@ -7,6 +7,7 @@ object ValidationUtils {
         return when {
             isAnyFieldEmpty(email, username, firstName, password) -> ValidationResult.EMPTY_FIELD
             containsWhiteSpace(email, username, password) -> ValidationResult.WHITESPACE_IN_FIELD
+            containsEmojis(email, username, firstName, password) -> ValidationResult.EMOJI_IN_FIELD
             !isEmailValid(email) -> ValidationResult.INVALID_EMAIL
             containsNumbers(firstName) -> ValidationResult.INVALID_NAME
             !isPasswordStrongEnough(password) -> ValidationResult.WEAK_PASSWORD
@@ -25,6 +26,13 @@ object ValidationUtils {
 
     private fun containsWhiteSpace(vararg fields: String): Boolean {
         return fields.any { it.contains(" ") }
+    }
+
+    private fun containsEmojis(vararg fields: String): Boolean {
+        val emojiRegex = Regex("[\\p{So}]")
+        return fields.any { field ->
+            emojiRegex.containsMatchIn(field)
+        }
     }
 
     private fun isEmailValid(email: String): Boolean {
@@ -102,7 +110,8 @@ object ValidationUtils {
         INVALID_NAME,
         PASSWORDS_NOT_MATCH,
         WEAK_PASSWORD,
-        WHITESPACE_IN_FIELD
+        WHITESPACE_IN_FIELD,
+        EMOJI_IN_FIELD
     }
 
     @Deprecated("Deprecated in Java")
