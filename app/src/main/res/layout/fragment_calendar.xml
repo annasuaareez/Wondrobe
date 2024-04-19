@@ -6,4 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".ui.calendar.CalendarFragment">
 
+    <ScrollView
+        android:id="@+id/calendarScrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="32dp"
+        android:background="@drawable/rounded_end"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <CalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
