@@ -23,4 +23,18 @@
         <item name="android:background">@color/black</item>
     </style>
 
+    <style name="Calendar" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="android:background">@drawable/rounded_end</item>
+        <item name="android:dateTextAppearance">@style/TextAppearance</item>
+        <item name="android:weekDayTextAppearance">@style/WeekDayTextAppearance</item>
+    </style>
+
+    <style name="TextAppearance" parent="@android:style/TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="WeekDayTextAppearance" parent="@android:style/TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/dark_blue_gray</item>
+    </style>
+
 </resources>

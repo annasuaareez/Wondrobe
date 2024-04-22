@@ -15,7 +15,6 @@
         android:paddingTop="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="32dp"
-        android:background="@drawable/rounded_end"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,7 +23,8 @@
         <CalendarView
             android:id="@+id/calendarView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            style="@style/Calendar" />
 
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
