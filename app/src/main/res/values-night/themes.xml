@@ -25,7 +25,26 @@
         <item name="colorControlActivated">@color/dark_blue_gray</item>
     </style>
 
+    <!-- Estilo TextView -->
+    <style name="TextViewAdd.DarkTheme" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/dark_blue_gray</item>
+    </style>
+
     <style name="Line">
         <item name="android:background">@color/white</item>
+    </style>
+
+    <style name="Calendar.DarkTheme" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="android:background">@drawable/rounded_end</item>
+        <item name="android:dateTextAppearance">@style/TextAppearance</item>
+        <item name="android:weekDayTextAppearance">@style/WeekDayTextAppearance</item>
+    </style>
+
+    <style name="TextAppearance.DarkTheme" parent="@android:style/TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="WeekDayTextAppearance.DarkTheme" parent="@android:style/TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/dark_blue_gray</item>
     </style>
 </resources>
