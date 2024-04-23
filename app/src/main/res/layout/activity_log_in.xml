@@ -141,6 +141,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/new_to_wondrobe"
+            android:fontFamily="@font/kollektif"
             style="@style/TextView.DarkTheme"
             android:textSize="14sp"/>
 
@@ -149,6 +150,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/create_account"
+            android:fontFamily="@font/kollektif"
             android:textColor="@color/purple_light"
             android:textSize="14sp"
             android:layout_marginStart="4dp"/>
@@ -174,6 +176,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/continue_with"
+            android:fontFamily="@font/kollektif"
             style="@style/TextView.DarkTheme"
             android:textSize="14sp"
             android:layout_marginHorizontal="10dp"
@@ -217,5 +220,18 @@
             android:fontFamily="@font/kollektif" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/forgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/forgot_password"
+        android:fontFamily="@font/kollektif"
+        android:textColor="@color/purple_light"
+        android:textSize="14sp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/loginWithGoogle"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

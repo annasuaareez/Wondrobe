@@ -35,7 +35,7 @@ object ValidationUtils {
         }
     }
 
-    private fun isEmailValid(email: String): Boolean {
+    fun isEmailValid(email: String): Boolean {
         val emailPattern = Patterns.EMAIL_ADDRESS
         return emailPattern.matcher(email).matches()
     }

@@ -37,4 +37,9 @@
     <string name="log_out">Log out</string>
     <string name="for_you">For you</string>
     <string name="following">Following</string>
+    <string name="forgot_password">Forgot password ?</string>
+    <string name="forgot_your_password">Forgot your password</string>
+    <string name="link_password">We\'ll send a link that will sign you into the app instantly</string>
+    <string name="enter_your_email">Enter your email</string>
+    <string name="send">Send</string>
 </resources>

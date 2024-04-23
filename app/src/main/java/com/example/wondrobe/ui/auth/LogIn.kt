@@ -44,6 +44,7 @@ class LogIn : AppCompatActivity() {
         val logInWithGoogle = findViewById<LinearLayout>(R.id.loginWithGoogle)
         val passwordEditText = findViewById<EditText>(R.id.passwordLogInEditText)
         val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
+        val forgotPassword = findViewById<TextView>(R.id.forgotPassword)
 
         PasswordVisibility(passwordEditText, passwordVisibilityButton)
 
@@ -96,6 +97,12 @@ class LogIn : AppCompatActivity() {
             } else {
                 showAlertDialog("No internet connection")
             }
+        }
+
+        forgotPassword.setOnClickListener {
+            // Aquí puedes iniciar la otra actividad o realizar la acción necesaria
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
         }
     }
 

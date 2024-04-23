@@ -211,6 +211,7 @@ class UserEdit : AppCompatActivity() {
             return false
         }
         if (containsEmojis(trimmedUsername)) {
+            showEmojiAlert()
             return false
         }
         return true
@@ -223,6 +224,15 @@ class UserEdit : AppCompatActivity() {
     private fun containsEmojis(text: String): Boolean {
         val emojiRegex = Regex("[\\p{So}]")
         return emojiRegex.containsMatchIn(text)
+    }
+
+    private fun showEmojiAlert() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Invalid Input")
+        alertDialogBuilder.setMessage("Username cannot contain emojis.")
+        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 
     private fun saveUserData(username: String, firstName: String, biography: String) {
