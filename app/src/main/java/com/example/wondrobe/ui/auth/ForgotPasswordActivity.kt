@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.R
+import com.google.firebase.auth.FirebaseAuth
 
 class ForgotPasswordActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,10 +30,31 @@ class ForgotPasswordActivity : AppCompatActivity() {
         sendButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             if (ValidationUtils.isEmailValid(email)) {
-                // Aquí continuarías con la lógica para enviar el correo
-                //Toast.makeText(this, "Correo válido. Implementa el envío del correo aquí.", Toast.LENGTH_SHORT).show()
+                FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+                    .addOnCompleteListener { passwordResetTask ->
+                        if (passwordResetTask.isSuccessful) {
+                            // Correo de restablecimiento de contraseña enviado con éxito
+                            Toast.makeText(
+                                this,
+                                "Password reset email sent successfully.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            // Regresa a la pantalla de inicio de sesión
+                            val intent = Intent(this, LogIn::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            // Maneja el error
+                            Toast.makeText(
+                                this,
+                                "Error sending password reset email: ${passwordResetTask.exception?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
             } else {
-                // Mostrar AlertDialog indicando que el correo no es válido
+                // Muestra un AlertDialog indicando que el correo no es válido
                 val alertDialogBuilder = AlertDialog.Builder(this)
                 alertDialogBuilder.setTitle("Invalid Email")
                 alertDialogBuilder.setMessage("Please enter a valid email address.")
@@ -41,6 +63,7 @@ class ForgotPasswordActivity : AppCompatActivity() {
                 alertDialog.show()
             }
         }
+
     }
 }
 
