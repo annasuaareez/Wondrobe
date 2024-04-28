@@ -42,7 +42,7 @@ class HomeFragment : Fragment() {
         currentUserUid = auth.currentUser?.uid ?: ""
 
         val searchView = binding.searchView
-        //val listView = binding.listUsers
+        val listView = binding.listUsers
 
         val forYouButton = binding.forYouButton
         val followingButton = binding.followingButton
@@ -57,9 +57,9 @@ class HomeFragment : Fragment() {
             override fun onQueryTextChange(newText: String?): Boolean {
                 newText?.let {
                     if (it != currentUserUid && it != auth.currentUser?.displayName) { // Evitar búsqueda de uno mismo
-                        //searchUsers(it, listView)
+                        searchUsers(it, listView)
                     } else {
-                        //updateListView(emptyList(), listView) // Si coincide, muestra una lista vacía
+                        updateListView(emptyList(), listView) // Si coincide, muestra una lista vacía
                         searchView.setQuery("", false)
                     }
                 }

@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
@@ -177,6 +178,8 @@ class UserFragment : Fragment() {
         val intent = Intent(activity, UserEdit::class.java)
         startActivityForResult(intent, REQUEST_CODE_EDIT_USER)
         activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        // Notificar a la actividad para que elimine este fragmento
+        (activity as? AppCompatActivity)?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
     }
 
     private fun showAlertToast(message: String) {

@@ -11,7 +11,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class AddFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentAddBinding? = null
-    private var isOpened = false
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -40,19 +39,6 @@ class AddFragment : BottomSheetDialogFragment() {
     }
 
     override fun show(manager: FragmentManager, tag: String?) {
-        // Verificar si el fragmento ya está añadido
-        /*val fragmentByTag = manager.findFragmentByTag(tag)
-        if (fragmentByTag == null || !fragmentByTag.isAdded) {
-            super.show(manager, tag)
-        }*/
-        if (!isOpened) {
-            isOpened = true
-            super.show(manager, tag)
-        }
-    }
-
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        isOpened = false // Marcar que el fragmento se ha cerrado
+        super.show(manager, tag)
     }
 }

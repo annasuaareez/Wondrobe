@@ -211,7 +211,7 @@ class LogIn : AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 // Manejar errores de Firestore
-                showAlertToast("Error retrieving user data: ${e.message}")
+                showAlertDialog("Error retrieving user data: ${e.message}")
             }
     }
 

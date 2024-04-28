@@ -175,7 +175,7 @@ class SignUp : AppCompatActivity() {
             }
     }
 
-    private fun registerUser(
+    /*private fun registerUser(
         email: String,
         username: String,
         firstName: String,
@@ -218,6 +218,60 @@ class SignUp : AppCompatActivity() {
                                     } else {
                                         // Manejar errores al recuperar los métodos de inicio de sesión
                                         showAlertToast("Error fetching sign-in methods: ${task.exception?.message}")
+                                    }
+                                }
+                        } else {
+                            // Mostrar AlertDialog indicando que el nombre de usuario ya está en uso
+                            showAlertDialog("Username is already taken. Please choose another one.")
+                        }
+                    }
+                } else {
+                    // Mostrar AlertDialog indicando que el correo electrónico ya está registrado
+                    showAlertDialog("Email is already registered.")
+                }
+            }
+        } else {
+            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
+        }
+    }*/
+
+    private fun registerUser(
+        email: String,
+        username: String,
+        firstName: String,
+        password: String
+    ) {
+        val validationResult = ValidationUtils.validateFieldsSignUp(email, username, firstName, password)
+
+        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
+            checkEmailAvailability(email) { isAvailableEmail ->
+                if (isAvailableEmail) {
+                    checkUsernameAvailability(username) { isAvailableUsername ->
+                        if (isAvailableUsername) {
+                            // Crear usuario en Firebase Authentication
+                            mAuth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(this) { task ->
+                                    if (task.isSuccessful) {
+                                        // Usuario creado exitosamente en Firebase Authentication
+                                        val encryptedPassword = PasswordEncryptor().encryptPassword(password)
+                                        val user = User(email = email, username = username, firstName = firstName, password = encryptedPassword)
+
+                                        val db = FirebaseFirestore.getInstance()
+
+                                        db.collection("users")
+                                            .add(user)
+                                            .addOnSuccessListener {
+                                                // Mostrar un mensaje de éxito o realizar otras acciones necesarias
+                                                showAlertToast("User successfully registered")
+                                                redirectToLogIn()
+                                            }
+                                            .addOnFailureListener { e ->
+                                                // Manejar el error en caso de que falle la escritura en Firestore
+                                                showAlertToast("Error registering user: ${e.message}")
+                                            }
+                                    } else {
+                                        // Error al crear usuario en Firebase Authentication
+                                        showAlertToast("Authentication failed: ${task.exception?.message}")
                                     }
                                 }
                         } else {
