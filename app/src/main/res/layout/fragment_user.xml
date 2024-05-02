@@ -88,4 +88,64 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="14dp"/>
 
+    <LinearLayout
+        android:id="@+id/followingLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="@id/circle"
+        app:layout_constraintTop_toBottomOf="@id/textViewBiography"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="14dp">
+
+        <TextView
+            android:id="@+id/textViewFollowingCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:fontFamily="@font/kollektif"
+            style="@style/TextView.DarkTheme"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/following"
+            android:fontFamily="@font/kollektif"
+            style="@style/TextView.DarkTheme"
+            android:layout_marginStart="5dp"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/followersLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toEndOf="@id/followingLayout"
+        app:layout_constraintTop_toBottomOf="@id/textViewBiography"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp">
+
+        <TextView
+            android:id="@+id/textViewFollowersCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:fontFamily="@font/kollektif"
+            style="@style/TextView.DarkTheme"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/followers"
+            android:fontFamily="@font/kollektif"
+            style="@style/TextView.DarkTheme"
+            android:layout_marginStart="5dp"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

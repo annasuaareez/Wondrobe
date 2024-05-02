@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
@@ -29,6 +30,8 @@ class UserFragment : Fragment() {
     private lateinit var biography: String
     private lateinit var photoUrl: String
     private lateinit var bannerUrl: String
+    private lateinit var followersCount: String
+    private lateinit var followingCount: String
     private var userDetailsLoaded = false // Indica si los detalles del usuario ya han sido cargados
 
     override fun onCreateView(
@@ -72,6 +75,8 @@ class UserFragment : Fragment() {
                     biography = document.getString("biography") ?: ""
                     photoUrl = document.getString("profileImage") ?: ""
                     bannerUrl = document.getString("bannerImage") ?: ""
+                    followersCount = document.getLong("followersCount")?.toString() ?: "0"
+                    followingCount = document.getLong("followingCount")?.toString() ?: "0"
 
                     // Indicar que los detalles del usuario han sido cargados
                     userDetailsLoaded = true
@@ -93,6 +98,8 @@ class UserFragment : Fragment() {
         binding.textViewName.text = firstName
         binding.textViewUsername.text = formattedUsername
         binding.textViewBiography.text = biography
+        binding.textViewFollowersCount.text = followersCount
+        binding.textViewFollowingCount.text = followingCount
 
         //showAlertDialog(photoUrl)
         // Verificar si el usuario tiene una foto de perfil

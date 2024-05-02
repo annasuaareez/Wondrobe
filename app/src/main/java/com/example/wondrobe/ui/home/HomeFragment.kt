@@ -1,7 +1,5 @@
 package com.example.wondrobe.ui.home
 
-//noinspection SuspiciousImport
-import android.R
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
@@ -9,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,11 +41,23 @@ class HomeFragment : Fragment() {
 
         val searchView = binding.searchView
         val listView = binding.listUsers
+        val blackOverlay = binding.blackOverlay
 
         val forYouButton = binding.forYouButton
         val followingButton = binding.followingButton
         val forYouIndicator = binding.forYouIndicator
         val followingIndicator = binding.followingIndicator
+
+        searchView.setOnSearchClickListener {
+            blackOverlay.visibility = View.VISIBLE
+        }
+
+        searchView.setOnCloseListener {
+            blackOverlay.visibility = View.GONE
+            updateListView(emptyList(), listView)
+            listView.visibility = View.GONE
+            false
+        }
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -86,11 +96,16 @@ class HomeFragment : Fragment() {
             .limit(8)
             .get()
             .addOnSuccessListener { documents ->
-                val usersList = mutableListOf<String>()
+                val usersList = mutableListOf<User>()
                 for (document in documents) {
                     val username = document.getString("username") ?: ""
                     val firstName = document.getString("firstName") ?: ""
-                    usersList.add("$username - $firstName")
+                    val profileImage = document.getString("profileImage") ?: ""
+
+                    //Log.e("IMAGEN", profileImage)
+
+                    val user = User("",username, firstName,"","", profileImage, "")
+                    usersList.add(user)
                 }
                 updateListView(usersList, listView)
             }
@@ -100,8 +115,13 @@ class HomeFragment : Fragment() {
             }
     }
 
-    private fun updateListView(usersList: List<String>, listView: ListView) {
-        val adapter = ArrayAdapter(requireContext(), R.layout.simple_list_item_1, usersList)
+    private fun updateListView(usersList: List<User>, listView: ListView) {
+        Log.d("HomeFragment", "Número de usuarios: ${usersList.size}")
+        usersList.forEachIndexed { index, user ->
+            Log.d("HomeFragment", "Usuario $index: $user")
+        }
+
+        val adapter = UserAdapter(requireContext(), usersList)
         listView.adapter = adapter
     }
 

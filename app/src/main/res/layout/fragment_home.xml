@@ -19,6 +19,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/blackOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/black"
+        android:visibility="gone"
+        android:elevation="7dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchView" />
+
     <!--android:background="@drawable/listview_background"-->
     <ListView
         android:id="@+id/listUsers"
@@ -53,6 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/for_you"
+                android:fontFamily="@font/kollektif"
                 android:background="@drawable/button_transparent" />
 
             <View
@@ -76,6 +89,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/following"
+                android:fontFamily="@font/kollektif"
                 android:background="@drawable/button_transparent" />
 
             <View

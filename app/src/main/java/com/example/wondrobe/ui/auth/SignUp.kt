@@ -175,7 +175,7 @@ class SignUp : AppCompatActivity() {
             }
     }
 
-    /*private fun registerUser(
+    private fun registerUser(
         email: String,
         username: String,
         firstName: String,
@@ -233,9 +233,9 @@ class SignUp : AppCompatActivity() {
         } else {
             ValidationUtils.showInvalidFieldsAlert(this, validationResult)
         }
-    }*/
+    }
 
-    private fun registerUser(
+    /*private fun registerUser(
         email: String,
         username: String,
         firstName: String,
@@ -287,7 +287,7 @@ class SignUp : AppCompatActivity() {
         } else {
             ValidationUtils.showInvalidFieldsAlert(this, validationResult)
         }
-    }
+    }*/
 
     private fun checkEmailAvailability(email: String, callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
