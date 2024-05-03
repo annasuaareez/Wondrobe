@@ -12,7 +12,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
-import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
 import com.example.wondrobe.data.User
 import com.example.wondrobe.utils.PasswordEncryptor
@@ -133,10 +132,10 @@ class SignUp : AppCompatActivity() {
                         val lastName = googleUser.familyName.orEmpty()
                         val username = if (firstName.isNotEmpty() && lastName.isNotEmpty()) {
                             // Si tanto el nombre como el apellido están presentes, usarlos para generar el nombre de usuario
-                            "${firstName}${lastName.take(2)}${(10000..99999).random()}"
+                            "${firstName}${lastName.take(2)}${(10000..99999).random()}".toLowerCase()
                         } else {
                             // Si no hay nombre o apellido, usar el nombre de usuario del correo electrónico
-                            googleUser.email?.substringBefore('@') ?: ""
+                            googleUser.email?.substringBefore('@')?.toLowerCase() ?: ""
                         }
                         val email = googleUser.email.orEmpty()
                         val photoUrl = googleUser.photoUrl.toString()
@@ -175,7 +174,7 @@ class SignUp : AppCompatActivity() {
             }
     }
 
-    private fun registerUser(
+    /*private fun registerUser(
         email: String,
         username: String,
         firstName: String,
@@ -233,9 +232,9 @@ class SignUp : AppCompatActivity() {
         } else {
             ValidationUtils.showInvalidFieldsAlert(this, validationResult)
         }
-    }
+    }*/
 
-    /*private fun registerUser(
+    private fun registerUser(
         email: String,
         username: String,
         firstName: String,
@@ -287,7 +286,7 @@ class SignUp : AppCompatActivity() {
         } else {
             ValidationUtils.showInvalidFieldsAlert(this, validationResult)
         }
-    }*/
+    }
 
     private fun checkEmailAvailability(email: String, callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()

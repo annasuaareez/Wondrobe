@@ -41,7 +41,7 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -52,14 +52,14 @@ dependencies {
     //Splash
     implementation("androidx.core:core-splashscreen:1.0.1")
     //Firebase auth
-    implementation("com.google.firebase:firebase-auth:22.3.1")
-    implementation("com.google.firebase:firebase-analytics:21.6.2")
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    implementation("com.google.firebase:firebase-auth:23.0.0")
+    implementation("com.google.firebase:firebase-analytics:22.0.0")
+    implementation("com.google.android.gms:play-services-auth:21.1.1")
     //Cloud Firestore
-    implementation("com.google.firebase:firebase-firestore:24.11.1")
+    implementation("com.google.firebase:firebase-firestore:25.0.0")
     //Glide es una biblioteca de carga y visualización de imágenes para Android que simplifica el proceso de cargar imágenes desde diversos orígenes
     implementation("com.github.bumptech.glide:glide:4.12.0")
-    implementation("com.google.firebase:firebase-storage:20.3.0")
+    implementation("com.google.firebase:firebase-storage:21.0.0")
     //Google Material Design
     implementation("com.google.android.material:material:1.11.0")
     //SearchView

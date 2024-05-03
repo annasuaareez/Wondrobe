@@ -186,7 +186,7 @@ class UserFragment : Fragment() {
         startActivityForResult(intent, REQUEST_CODE_EDIT_USER)
         activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         // Notificar a la actividad para que elimine este fragmento
-        (activity as? AppCompatActivity)?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
+        //(activity as? AppCompatActivity)?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
     }
 
     private fun showAlertToast(message: String) {

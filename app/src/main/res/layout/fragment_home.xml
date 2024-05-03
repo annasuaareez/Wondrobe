@@ -36,7 +36,7 @@
         android:id="@+id/listUsers"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:elevation="8dp"
+        android:elevation="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -65,7 +65,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/for_you"
+                style="@style/TextView.DarkTheme"
                 android:fontFamily="@font/kollektif"
+                android:textSize="18sp"
                 android:background="@drawable/button_transparent" />
 
             <View
@@ -89,7 +91,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/following"
+                style="@style/TextView.DarkTheme"
                 android:fontFamily="@font/kollektif"
+                android:textSize="18sp"
                 android:background="@drawable/button_transparent" />
 
             <View

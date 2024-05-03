@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -7,9 +8,10 @@
 
     <ImageView
         android:id="@+id/user_image"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/ic_user"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/ic_user_white"
+        android:elevation="20dp"
         android:layout_marginEnd="16dp" />
 
     <LinearLayout
@@ -17,13 +19,14 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:layout_marginTop="7dp">
+        android:layout_marginTop="12dp">
 
         <TextView
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/username"
+            style="@style/TextView.DarkTheme"
             android:fontFamily="@font/kollektif"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -33,6 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/first_name"
+            style="@style/TextView.DarkTheme"
             android:fontFamily="@font/kollektif"
             android:textSize="14sp" />
 

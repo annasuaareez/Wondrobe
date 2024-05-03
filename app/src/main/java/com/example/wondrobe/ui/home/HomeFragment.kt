@@ -1,6 +1,8 @@
 package com.example.wondrobe.ui.home
 
 import android.animation.ObjectAnimator
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +14,7 @@ import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
+import com.example.wondrobe.ui.user.UserFollow
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -23,6 +26,13 @@ class HomeFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private lateinit var currentUserUid: String
+    private lateinit var searchView: SearchView
+    private lateinit var listView: ListView
+    private lateinit var blackOverlay: View
+
+    companion object {
+        private const val REQUEST_USER_FOLLOW = 1001
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,16 +42,16 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Inicializar Firebase Auth y Firestore
+        // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        // Obtener el identificador único del usuario actual
+        // Get the unique identifier of the current user
         currentUserUid = auth.currentUser?.uid ?: ""
 
-        val searchView = binding.searchView
-        val listView = binding.listUsers
-        val blackOverlay = binding.blackOverlay
+        searchView = binding.searchView
+        listView = binding.listUsers
+        blackOverlay = binding.blackOverlay
 
         val forYouButton = binding.forYouButton
         val followingButton = binding.followingButton
@@ -55,7 +65,7 @@ class HomeFragment : Fragment() {
         searchView.setOnCloseListener {
             blackOverlay.visibility = View.GONE
             updateListView(emptyList(), listView)
-            listView.visibility = View.GONE
+            //listView.visibility = View.GONE
             false
         }
 
@@ -66,14 +76,21 @@ class HomeFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 newText?.let {
-                    if (it != currentUserUid && it != auth.currentUser?.displayName) { // Evitar búsqueda de uno mismo
-                        searchUsers(it, listView)
+                    if (it.isNotBlank()) {
+                        if (it != currentUserUid && it != auth.currentUser?.displayName) {
+                            searchUsers(it, listView)
+                            return true
+                        } else {
+                            updateListView(emptyList(), listView)
+                            searchView.setQuery("", false)
+                            return true
+                        }
                     } else {
-                        updateListView(emptyList(), listView) // Si coincide, muestra una lista vacía
-                        searchView.setQuery("", false)
+                        updateListView(emptyList(), listView) // Actualiza la lista con una lista vacía
+                        return true
                     }
                 }
-                return true
+                return false
             }
         })
 
@@ -88,11 +105,24 @@ class HomeFragment : Fragment() {
         return root
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Si el SearchView está abierto y tiene texto escrito
+        if (!searchView.isIconified && searchView.query.isNotEmpty()) {
+            searchView.setQuery("", false)
+            searchView.isIconified = true
+            blackOverlay.visibility = View.GONE
+            updateListView(emptyList(), listView)
+            listView.visibility = View.GONE
+        }
+    }
+
     private fun searchUsers(query: String, listView: ListView) {
         val db = FirebaseFirestore.getInstance()
         db.collection("users")
             .whereGreaterThanOrEqualTo("username", query)
             .whereLessThan("username", query + "\uf8ff")
+            //.whereNotEqualTo("uid", currentUserUid)
             .limit(8)
             .get()
             .addOnSuccessListener { documents ->
@@ -116,22 +146,29 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateListView(usersList: List<User>, listView: ListView) {
-        Log.d("HomeFragment", "Número de usuarios: ${usersList.size}")
+        Log.d("HomeFragment", "Number of users: ${usersList.size}")
         usersList.forEachIndexed { index, user ->
-            Log.d("HomeFragment", "Usuario $index: $user")
+            Log.d("HomeFragment", "User $index: $user")
         }
 
         val adapter = UserAdapter(requireContext(), usersList)
         listView.adapter = adapter
+
+        listView.setOnItemClickListener { parent, view, position, id ->
+            val selectedUser = usersList[position]
+            val intent = Intent(requireContext(), UserFollow::class.java)
+            intent.putExtra("selected_user", selectedUser)
+            startActivityForResult(intent, REQUEST_USER_FOLLOW)
+        }
     }
 
     private fun animateIndicatorChange(showIndicator: View, hideIndicator: View) {
         val hideAnimator = ObjectAnimator.ofFloat(hideIndicator, "alpha", 1f, 0f)
-        hideAnimator.duration = 250 // Duración de la animación en milisegundos
+        hideAnimator.duration = 250 // Duration of the animation in milliseconds
         hideAnimator.interpolator = AccelerateDecelerateInterpolator()
 
         val showAnimator = ObjectAnimator.ofFloat(showIndicator, "alpha", 0f, 1f)
-        showAnimator.duration = 250 // Duración de la animación en milisegundos
+        showAnimator.duration = 250 // Duration of the animation in milliseconds
         showAnimator.interpolator = AccelerateDecelerateInterpolator()
 
         hideAnimator.addUpdateListener {
@@ -148,6 +185,15 @@ class HomeFragment : Fragment() {
 
         hideAnimator.start()
         showAnimator.start()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_USER_FOLLOW && resultCode == Activity.RESULT_OK) {
+            // Aquí obtienes los datos devueltos por UserFollowActivity
+            val userInfo = data?.getParcelableExtra<User>("user_info")
+            // Haz lo que necesites con la información del usuario
+        }
     }
 
     override fun onDestroyView() {

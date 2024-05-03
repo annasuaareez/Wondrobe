@@ -29,11 +29,16 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
         user?.let {
             Log.d("UserAdapter", "Username: ${it.username}, First Name: ${it.firstName}, URL: ${it.profileImage}")
 
-            Glide.with(context)
-                .load(it.profileImage)
-                .placeholder(R.drawable.ic_user)
-                .transform(CircleCrop())
-                .into(imageView)
+            if (it.profileImage.isNullOrEmpty()) {
+                //si no hay imagen ponemos el icono
+                imageView.setImageResource(R.drawable.ic_user_white)
+            } else {
+                Glide.with(context)
+                    .load(it.profileImage)
+                    .placeholder(R.drawable.ic_user)
+                    .transform(CircleCrop())
+                    .into(imageView)
+            }
 
             usernameTextView.text = it.username
             firstNameTextView.text = it.firstName
