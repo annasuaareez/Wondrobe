@@ -145,6 +145,7 @@ class SignUp : AppCompatActivity() {
                             if (isAvailableEmail) {
                                 // El correo electrónico no está registrado, proceder con el registro
                                 val user = User(
+                                    uid = FirebaseAuth.getInstance().currentUser?.uid,
                                     email = email,
                                     username = username,
                                     firstName = firstName,
@@ -174,66 +175,6 @@ class SignUp : AppCompatActivity() {
             }
     }
 
-    /*private fun registerUser(
-        email: String,
-        username: String,
-        firstName: String,
-        password: String
-    ) {
-        val validationResult = ValidationUtils.validateFieldsSignUp(email, username, firstName, password)
-
-        if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
-            checkEmailAvailability(email) { isAvailableEmail ->
-                if (isAvailableEmail) {
-                    checkUsernameAvailability(username) { isAvailableUsername ->
-                        if (isAvailableUsername) {
-                            // Verificar si el correo electrónico ya está asociado con una cuenta de Google
-                            FirebaseAuth.getInstance().fetchSignInMethodsForEmail(email)
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        val signInMethods = task.result?.signInMethods ?: emptyList()
-                                        if (signInMethods.contains(GoogleAuthProvider.PROVIDER_ID)) {
-                                            // El correo electrónico está asociado con una cuenta de Google, mostrar un mensaje al usuario
-                                            showAlertToast("This email is already registered with Google. Please sign in using Google.")
-                                        } else {
-                                            // El correo electrónico no está asociado con una cuenta de Google, proceder con el registro
-                                            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
-                                            val user = User(email = email, username = username, firstName = firstName, password = encryptedPassword)
-
-                                            val db = FirebaseFirestore.getInstance()
-
-                                            db.collection("users")
-                                                .add(user)
-                                                .addOnSuccessListener {
-                                                    // Mostrar un mensaje de éxito o realizar otras acciones necesarias
-                                                    showAlertToast("User successfully registered")
-                                                    redirectToLogIn()
-                                                }
-                                                .addOnFailureListener { e ->
-                                                    // Manejar el error en caso de que falle la escritura en Firestore
-                                                    showAlertToast("Error registering user: ${e.message}")
-                                                }
-                                        }
-                                    } else {
-                                        // Manejar errores al recuperar los métodos de inicio de sesión
-                                        showAlertToast("Error fetching sign-in methods: ${task.exception?.message}")
-                                    }
-                                }
-                        } else {
-                            // Mostrar AlertDialog indicando que el nombre de usuario ya está en uso
-                            showAlertDialog("Username is already taken. Please choose another one.")
-                        }
-                    }
-                } else {
-                    // Mostrar AlertDialog indicando que el correo electrónico ya está registrado
-                    showAlertDialog("Email is already registered.")
-                }
-            }
-        } else {
-            ValidationUtils.showInvalidFieldsAlert(this, validationResult)
-        }
-    }*/
-
     private fun registerUser(
         email: String,
         username: String,
@@ -243,9 +184,10 @@ class SignUp : AppCompatActivity() {
         val validationResult = ValidationUtils.validateFieldsSignUp(email, username, firstName, password)
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
+            val lowercaseUsername = username.toLowerCase() // Convertir el nombre de usuario a minúsculas
             checkEmailAvailability(email) { isAvailableEmail ->
                 if (isAvailableEmail) {
-                    checkUsernameAvailability(username) { isAvailableUsername ->
+                    checkUsernameAvailability(lowercaseUsername) { isAvailableUsername ->
                         if (isAvailableUsername) {
                             // Crear usuario en Firebase Authentication
                             mAuth.createUserWithEmailAndPassword(email, password)
@@ -253,7 +195,7 @@ class SignUp : AppCompatActivity() {
                                     if (task.isSuccessful) {
                                         // Usuario creado exitosamente en Firebase Authentication
                                         val encryptedPassword = PasswordEncryptor().encryptPassword(password)
-                                        val user = User(email = email, username = username, firstName = firstName, password = encryptedPassword)
+                                        val user = User(uid = FirebaseAuth.getInstance().currentUser?.uid, email = email, username = lowercaseUsername, firstName = firstName, password = encryptedPassword)
 
                                         val db = FirebaseFirestore.getInstance()
 

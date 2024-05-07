@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -43,8 +44,8 @@ class UserFragment : Fragment() {
     private lateinit var textViewFollowingCount: TextView
     private lateinit var circleImageView: ImageView
     private lateinit var bannerImageView: ImageView
-    private lateinit var followingLayout: ConstraintLayout
-    private lateinit var followersLayout: ConstraintLayout
+    private lateinit var followingLayout: LinearLayout
+    private lateinit var followersLayout: LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,

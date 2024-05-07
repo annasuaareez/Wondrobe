@@ -65,6 +65,7 @@ dependencies {
     //SearchView
     implementation("androidx.appcompat:appcompat:1.6.1")
     //implementation("com.android.car.ui:car-ui-lib:2.6.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
 
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     testImplementation("junit:junit:4.13.2")
