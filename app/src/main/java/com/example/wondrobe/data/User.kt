@@ -4,16 +4,17 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class User(
-    val email: String? = null,
-    val username: String? = null,
-    val firstName: String? = null,
-    val biography: String? = null,
-    val password: String? = null,
-    val profileImage: String? = null,
-    val bannerImage: String? = null,
-    val isAdmin: Boolean = false,
-    val followersCount: Int = 0,
-    val followingCount: Int = 0
+        val email: String? = null,
+        val username: String? = null,
+        val firstName: String? = null,
+        val biography: String? = null,
+        val password: String? = null,
+        val profileImage: String? = null,
+        val bannerImage: String? = null,
+        val isAdmin: Boolean = false,
+        val followersCount: Int = 0,
+        val followingCount: Int = 0,
+    var isFollowing: Boolean = false
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
@@ -25,7 +26,8 @@ data class User(
         parcel.readString(),
         parcel.readByte() != 0.toByte(),
         parcel.readInt(),
-        parcel.readInt()
+        parcel.readInt(),
+        parcel.readByte() != 0.toByte()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -39,6 +41,7 @@ data class User(
         parcel.writeByte(if (isAdmin) 1 else 0)
         parcel.writeInt(followersCount)
         parcel.writeInt(followingCount)
+        parcel.writeByte(if (isFollowing) 1 else 0)
     }
 
     override fun describeContents(): Int {

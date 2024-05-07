@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -23,7 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class UserFragment : Fragment() {
 
     private var _binding: FragmentUserBinding? = null
-    private val binding get() = _binding!!
+
     private lateinit var userId: String
     private lateinit var firstName: String
     private lateinit var username: String
@@ -34,15 +36,34 @@ class UserFragment : Fragment() {
     private lateinit var followingCount: String
     private var userDetailsLoaded = false // Indica si los detalles del usuario ya han sido cargados
 
+    private lateinit var textViewName: TextView
+    private lateinit var textViewUsername: TextView
+    private lateinit var textViewBiography: TextView
+    private lateinit var textViewFollowersCount: TextView
+    private lateinit var textViewFollowingCount: TextView
+    private lateinit var circleImageView: ImageView
+    private lateinit var bannerImageView: ImageView
+    private lateinit var followingLayout: ConstraintLayout
+    private lateinit var followersLayout: ConstraintLayout
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUserBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        val root = inflater.inflate(R.layout.fragment_user, container, false)
 
-        binding.editProfileButton.setOnClickListener {
+        textViewName = root.findViewById(R.id.textViewName)
+        textViewUsername = root.findViewById(R.id.textViewUsername)
+        textViewBiography = root.findViewById(R.id.textViewBiography)
+        textViewFollowersCount = root.findViewById(R.id.textViewFollowersCount)
+        textViewFollowingCount = root.findViewById(R.id.textViewFollowingCount)
+        circleImageView = root.findViewById(R.id.circle)
+        bannerImageView = root.findViewById(R.id.banner)
+        followingLayout = root.findViewById(R.id.followingLayout)
+        followersLayout = root.findViewById(R.id.followersLayout)
+
+        root.findViewById<Button>(R.id.editProfileButton).setOnClickListener {
             redirectToEditUser()
         }
 
@@ -95,17 +116,17 @@ class UserFragment : Fragment() {
 
     private fun updateUI() {
         val formattedUsername = "@$username"
-        binding.textViewName.text = firstName
-        binding.textViewUsername.text = formattedUsername
-        binding.textViewBiography.text = biography
-        binding.textViewFollowersCount.text = followersCount
-        binding.textViewFollowingCount.text = followingCount
+        textViewName.text = firstName
+        textViewUsername.text = formattedUsername
+        textViewBiography.text = biography
+        textViewFollowersCount.text = followersCount
+        textViewFollowingCount.text = followingCount
 
         //showAlertDialog(photoUrl)
         // Verificar si el usuario tiene una foto de perfil
         if (photoUrl.isNotEmpty()) {
             // Cargar la imagen de perfil y aplicar la máscara circular
-            Glide.with(requireContext()).clear(binding.circle)
+            Glide.with(requireContext()).clear(circleImageView)
             Glide.with(requireContext())
                 .load(photoUrl)
                 .listener(object : RequestListener<Drawable> {
@@ -133,16 +154,16 @@ class UserFragment : Fragment() {
 
                 })
                 .transform(CircleCrop())
-                .into(binding.circle)
+                .into(circleImageView)
 
             // Forzar la actualización de la vista después de cargar la imagen
-            binding.circle.invalidate()
+            circleImageView.invalidate()
         }
 
         // Verificar si el usuario tiene un banner
         if (bannerUrl.isNotEmpty()) {
             // Cargar la imagen de perfil y aplicar la máscara circular
-            Glide.with(requireContext()).clear(binding.banner)
+            Glide.with(requireContext()).clear(bannerImageView)
             Glide.with(requireContext())
                 .load(bannerUrl)
                 .listener(object : RequestListener<Drawable> {
@@ -169,16 +190,36 @@ class UserFragment : Fragment() {
                     }
 
                 })
-                .into(binding.banner)
+                .into(bannerImageView)
 
             // Forzar la actualización de la vista después de cargar la imagen
-            binding.banner.invalidate()
+            bannerImageView.invalidate()
         }
 
         // Mostrar los TextView una vez que se han cargado los datos del usuario
-        binding.textViewName.visibility = View.VISIBLE
-        binding.textViewUsername.visibility = View.VISIBLE
-        binding.textViewBiography.visibility = View.VISIBLE
+        textViewName.visibility = View.VISIBLE
+        textViewUsername.visibility = View.VISIBLE
+        textViewBiography.visibility = View.VISIBLE
+
+        if (biography.isEmpty()) {
+            // Si no hay biografía, mueve los layouts debajo del textViewUsername
+            val paramsFollowing = followingLayout.layoutParams as ConstraintLayout.LayoutParams
+            paramsFollowing.topToBottom = textViewUsername.id
+            followingLayout.layoutParams = paramsFollowing
+
+            val paramsFollowers = followersLayout.layoutParams as ConstraintLayout.LayoutParams
+            paramsFollowers.topToBottom = textViewUsername.id
+            followersLayout.layoutParams = paramsFollowers
+        } else {
+            // Si hay biografía, restaura las restricciones originales
+            val paramsFollowing = followingLayout.layoutParams as ConstraintLayout.LayoutParams
+            paramsFollowing.topToBottom = textViewBiography.id
+            followingLayout.layoutParams = paramsFollowing
+
+            val paramsFollowers = followersLayout.layoutParams as ConstraintLayout.LayoutParams
+            paramsFollowers.topToBottom = textViewBiography.id
+            followersLayout.layoutParams = paramsFollowers
+        }
     }
 
     private fun redirectToEditUser() {
@@ -209,3 +250,6 @@ class UserFragment : Fragment() {
         private const val REQUEST_CODE_EDIT_USER = 1001
     }
 }
+
+
+

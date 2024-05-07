@@ -17,7 +17,7 @@
 
         <ImageView
             android:id="@+id/arrowIcon"
-            android:layout_width="40dp"
+            android:layout_width="35dp"
             android:layout_height="match_parent"
             android:layout_marginEnd="12dp"
             app:srcCompat="@drawable/ic_back"
@@ -32,7 +32,7 @@
             android:text="@string/username"
             style="@style/TextView.DarkTheme"
             android:fontFamily="@font/kollektif"
-            android:textSize="24sp"
+            android:textSize="25sp"
             android:layout_weight="1"/>
 
     </LinearLayout>
@@ -60,7 +60,7 @@
         android:layout_marginStart="20dp" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/editProfileButton"
+        android:id="@+id/followButton"
         android:layout_width="120dp"
         android:layout_height="40dp"
         android:layout_marginStart="16dp"
@@ -106,14 +106,14 @@
         android:layout_marginTop="14dp"/>
 
     <LinearLayout
-        android:id="@+id/followingLayout"
+        android:id="@+id/followingLayoutUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="@id/profileImage"
-        app:layout_constraintTop_toBottomOf="@id/biography"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="14dp">
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/biography">
 
         <TextView
             android:id="@+id/followingCount"
@@ -136,14 +136,14 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/followersLayout"
+        android:id="@+id/followersLayoutUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintStart_toEndOf="@id/followingLayout"
-        app:layout_constraintTop_toBottomOf="@id/biography"
+        app:layout_constraintStart_toEndOf="@id/followingLayoutUser"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="14dp">
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/biography">
 
         <TextView
             android:id="@+id/followersCount"

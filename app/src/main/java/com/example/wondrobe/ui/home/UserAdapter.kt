@@ -19,7 +19,7 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = convertView?: LayoutInflater.from(context).inflate(R.layout.list_item, parent, false)
 
-        val user = getItem(position)
+           val user = getItem(position)
 
         val imageView = view.findViewById<ImageView>(R.id.user_image)
         val usernameTextView = view.findViewById<TextView>(R.id.username)
