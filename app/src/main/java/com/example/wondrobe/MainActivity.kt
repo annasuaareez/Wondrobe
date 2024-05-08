@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity() {
         binding.navView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_add -> {
-                    // Mostrar el fragmento de hoja
                     val addFragment = AddFragment()
                     addFragment.show(supportFragmentManager, "add_fragment_tag")
                     true
