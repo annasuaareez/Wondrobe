@@ -1,8 +1,10 @@
 package com.example.wondrobe.ui.auth
 
 import ValidationUtils
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -27,6 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class SignUp : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private val RC_SIGN_IN = 9001
+    private val RC_TERMS_AND_CONDITIONS = 33
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +48,7 @@ class SignUp : AppCompatActivity() {
         val signUpWithGoogle = findViewById<LinearLayout>(R.id.singUpWithGoogle)
         val passwordEditText = this.findViewById<EditText>(R.id.passwordSignUpEditText)
         val passwordVisibilityButton = findViewById<ImageView>(R.id.passwordVisibilityButton)
+        val termsTextView = findViewById<TextView>(R.id.termsTextView)
 
         PasswordVisibility(passwordEditText, passwordVisibilityButton)
 
@@ -66,6 +70,12 @@ class SignUp : AppCompatActivity() {
         } else {
             // Modo claro
             isotypeImageView.setImageResource(R.drawable.isotype_black)
+        }
+
+        termsTextView.setOnClickListener {
+            // Abrir la actividad de Términos y Condiciones
+            val intent = Intent(this, TermsAndConditionsActivity::class.java)
+            startActivityForResult(intent, RC_TERMS_AND_CONDITIONS)
         }
 
         // Cambiar de vista al Log in
@@ -104,6 +114,12 @@ class SignUp : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        if (requestCode == RC_TERMS_AND_CONDITIONS && resultCode == Activity.RESULT_OK) {
+            // Marcar el CheckBox
+            val checkBox = findViewById<CheckBox>(R.id.termsCheckBox)
+            checkBox.isChecked = true
+        }
+
         when (requestCode) {
             RC_SIGN_IN -> {
                 try {
@@ -119,6 +135,13 @@ class SignUp : AppCompatActivity() {
     }
 
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
+        val checkBox = findViewById<CheckBox>(R.id.termsCheckBox)
+        // Verificar si el CheckBox de términos y condiciones está marcado
+        if (!checkBox.isChecked) {
+            Toast.makeText(this, "Please agree to the terms and conditions", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
@@ -182,6 +205,13 @@ class SignUp : AppCompatActivity() {
         password: String
     ) {
         val validationResult = ValidationUtils.validateFieldsSignUp(email, username, firstName, password)
+
+        val checkBox = findViewById<CheckBox>(R.id.termsCheckBox)
+        // Verificar si el CheckBox de términos y condiciones está marcado
+        if (!checkBox.isChecked) {
+            Toast.makeText(this, "Please agree to the terms and conditions", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
             val lowercaseUsername = username.toLowerCase() // Convertir el nombre de usuario a minúsculas

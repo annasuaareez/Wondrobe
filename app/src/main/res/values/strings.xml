@@ -45,4 +45,10 @@
     <string name="followers">Followers</string>
     <string name="follow">Follow</string>
     <string name="enter_verification_code">Verification code</string>
+    <string name="show_terms_and_conditions">Show Terms and Conditions</string>
+    <string name="accept">Accept</string>
+    <string name="terms_and_conditions_text">By clicking Accept, you agree to the terms and conditions of using this application.
+        These terms include, but are not limited to, privacy policies, proper usage of the application, and user responsibility.
+        Please read these terms carefully before proceeding.
+    </string>
 </resources>
