@@ -101,7 +101,7 @@ class LogIn : AppCompatActivity() {
 
         forgotPassword.setOnClickListener {
             // Aquí puedes iniciar la otra actividad o realizar la acción necesaria
-            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            val intent = Intent(this, ForgotPassword::class.java)
             startActivity(intent)
         }
     }

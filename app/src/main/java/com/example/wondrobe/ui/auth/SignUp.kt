@@ -74,7 +74,7 @@ class SignUp : AppCompatActivity() {
 
         termsTextView.setOnClickListener {
             // Abrir la actividad de Términos y Condiciones
-            val intent = Intent(this, TermsAndConditionsActivity::class.java)
+            val intent = Intent(this, TermsAndConditions::class.java)
             startActivityForResult(intent, RC_TERMS_AND_CONDITIONS)
         }
 
@@ -138,7 +138,7 @@ class SignUp : AppCompatActivity() {
         val checkBox = findViewById<CheckBox>(R.id.termsCheckBox)
         // Verificar si el CheckBox de términos y condiciones está marcado
         if (!checkBox.isChecked) {
-            Toast.makeText(this, "Please agree to the terms and conditions", Toast.LENGTH_SHORT).show()
+            showAlertDialorTerms("Please agree to the terms and conditions")
             return
         }
 
@@ -209,7 +209,7 @@ class SignUp : AppCompatActivity() {
         val checkBox = findViewById<CheckBox>(R.id.termsCheckBox)
         // Verificar si el CheckBox de términos y condiciones está marcado
         if (!checkBox.isChecked) {
-            Toast.makeText(this, "Please agree to the terms and conditions", Toast.LENGTH_SHORT).show()
+            showAlertDialorTerms("Please agree to the terms and conditions")
             return
         }
 
@@ -324,6 +324,15 @@ class SignUp : AppCompatActivity() {
     private fun showAlertDialog(message: String) {
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder.setTitle("Item already registered")
+        alertDialogBuilder.setMessage(message)
+        alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun showAlertDialorTerms(message: String) {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        //alertDialogBuilder.setTitle("Item already registered")
         alertDialogBuilder.setMessage(message)
         alertDialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
         val alertDialog = alertDialogBuilder.create()

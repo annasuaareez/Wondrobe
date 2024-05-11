@@ -14,7 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Random
 
-class ForgotPasswordActivity : AppCompatActivity() {
+class ForgotPassword : AppCompatActivity() {
 
     private lateinit var backButton: ImageView
     private lateinit var emailEditText: EditText

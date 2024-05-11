@@ -30,7 +30,7 @@
             android:name=".ui.user.UserFollow"
             android:exported="false" />
         <activity
-            android:name=".ui.auth.ForgotPasswordActivity"
+            android:name=".ui.auth.ForgotPassword"
             android:exported="false" />
         <activity
             android:name=".ui.user.UserEdit"
