@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.FragmentAddBinding
+import com.example.wondrobe.ui.add.post.SelectPost
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class AddFragment : BottomSheetDialogFragment() {

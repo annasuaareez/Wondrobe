@@ -22,7 +22,7 @@
         android:theme="@style/Theme.Wondrobe"
         tools:targetApi="31">
         <activity
-            android:name=".ui.add.SelectPost"
+            android:name=".ui.add.post.SelectPost"
             android:exported="false" />
         <activity
             android:name=".ui.auth.TermsAndConditions"
