@@ -43,7 +43,7 @@
 
         <!-- Título del primer botón -->
         <TextView
-            android:id="@+id/button1_title"
+            android:id="@+id/post_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Post"
@@ -55,6 +55,19 @@
             app:layout_constraintEnd_toEndOf="@id/postButton"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"/>
+
+        <!-- Icono del primer botón -->
+        <ImageView
+            android:id="@+id/post_icon"
+            android:layout_width="60sp"
+            android:layout_height="60sp"
+            android:src="@drawable/ic_pin"
+            android:elevation="4dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintTop_toTopOf="@id/postButton"
+            app:layout_constraintBottom_toBottomOf="@id/postButton"
+            app:layout_constraintStart_toStartOf="@id/postButton"
+            app:layout_constraintEnd_toEndOf="@id/postButton" />
 
         <!-- Segundo botón cuadrado -->
         <androidx.appcompat.widget.AppCompatButton
@@ -70,7 +83,7 @@
 
         <!-- Título del segundo botón -->
         <TextView
-            android:id="@+id/button2_title"
+            android:id="@+id/clothes_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Clothes"

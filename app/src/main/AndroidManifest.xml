@@ -22,10 +22,13 @@
         android:theme="@style/Theme.Wondrobe"
         tools:targetApi="31">
         <activity
-            android:name=".ui.auth.TermsAndConditions"
-            android:theme="@style/Theme.AppCompat.Dialog"
-            android:launchMode="singleTop"
+            android:name=".ui.add.SelectPost"
             android:exported="false" />
+        <activity
+            android:name=".ui.auth.TermsAndConditions"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.AppCompat.Dialog" />
         <activity
             android:name=".ui.user.UserFollow"
             android:exported="false" />

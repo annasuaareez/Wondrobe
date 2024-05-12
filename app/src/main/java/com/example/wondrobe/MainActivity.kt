@@ -11,8 +11,6 @@ import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import com.example.wondrobe.databinding.ActivityMainBinding
 import com.example.wondrobe.ui.add.AddFragment
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.bottomnavigation.LabelVisibilityMode
 import com.google.android.material.navigation.NavigationBarView
 
 class MainActivity : AppCompatActivity() {
