@@ -63,9 +63,13 @@ class SelectPost : AppCompatActivity() {
 
         nextButton.setOnClickListener {
             selectedImageUri?.let { uri ->
-                Log.e("SelectedImageUri", uri.toString())
-                openAddPostActivity(uri)
+                // Obtener la URL absoluta de la imagen seleccionada
+                val absolutePath = uri.path ?: ""
+                val absoluteUri = Uri.parse("file://$absolutePath")
+                Log.e("SelectedImageUri", absoluteUri.toString())
+
                 val intent = Intent(this, AddPost::class.java)
+                intent.putExtra("imageUri", absoluteUri.toString())
                 startActivity(intent)
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
                 finish()
@@ -246,6 +250,7 @@ class SelectPost : AppCompatActivity() {
             findViewById<AppCompatButton>(R.id.nextButton).isEnabled = true
             findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_purple)
         }
+
     }
 
     private fun resetImageGrid(imageGrid: GridLayout) {
