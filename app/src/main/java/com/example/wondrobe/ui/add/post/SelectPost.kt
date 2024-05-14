@@ -1,8 +1,10 @@
 package com.example.wondrobe.ui.add.post
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
@@ -12,63 +14,66 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import com.example.wondrobe.R
+import com.google.firebase.auth.FirebaseAuth
 import java.io.ByteArrayOutputStream
 
 class SelectPost : AppCompatActivity() {
-    private companion object {
-        const val NUM_COLUMNS = 4
-        const val MAX_IMAGE_COUNT = 60
-        const val IMAGE_LOAD_ERROR = "Error loading images"
+    companion object {
+        private const val NUM_COLUMNS = 4
+        private const val MAX_IMAGE_COUNT = 60
+        private const val IMAGE_LOAD_ERROR = "Error loading images"
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_GALLERY = 123
+        private const val REQUEST_CAMERA_PERMISSION = 100
     }
 
+    private lateinit var imageGrid: GridLayout
+    private lateinit var loadingProgressBar: ProgressBar
     private var selectedImageUri: Uri? = null
 
+    @SuppressLint("IntentReset")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_post)
 
         val closeIcon = findViewById<ImageView>(R.id.closeIconSelect)
-        val imageGrid = findViewById<GridLayout>(R.id.imageGrid)
-        val loadingProgressBar = findViewById<ProgressBar>(R.id.loadingProgressBar)
-        val contentResolver: ContentResolver = contentResolver
         val nextButton = findViewById<AppCompatButton>(R.id.nextButton)
         val cameraIcon = findViewById<ImageView>(R.id.cameraIcon)
         val galleryIcon = findViewById<ImageView>(R.id.galleryIcon)
 
+        imageGrid = findViewById(R.id.imageGrid)
+        loadingProgressBar = findViewById(R.id.loadingProgressBar)
+
+        loadImagesFromMediaStore()
         setupCloseIcon(closeIcon)
-        loadImages(contentResolver, imageGrid, loadingProgressBar).execute()
+        //loadImages(contentResolver, imageGrid, loadingProgressBar).execute()
 
         nextButton.isEnabled = false
         nextButton.setBackgroundResource(R.drawable.button_gray)
 
         nextButton.setOnClickListener {
             selectedImageUri?.let { uri ->
-                Log.i("SelectedImageUri", uri.toString())
+                Log.e("SelectedImageUri", uri.toString())
+                openAddPostActivity(uri)
                 val intent = Intent(this, AddPost::class.java)
-                intent.putExtra("imageUri", uri.toString())
                 startActivity(intent)
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                finish()
             }
         }
 
         cameraIcon.setOnClickListener {
-            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            if (takePictureIntent.resolveActivity(packageManager) != null) {
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-            } else {
-                Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
-            }
+            checkCameraPermission()
         }
 
         galleryIcon.setOnClickListener {
@@ -76,6 +81,12 @@ class SelectPost : AppCompatActivity() {
             pickPhotoIntent.type = "image/*"
             startActivityForResult(pickPhotoIntent, REQUEST_GALLERY)
         }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadImagesFromMediaStore()
     }
 
     private fun setupCloseIcon(closeIcon: ImageView) {
@@ -84,6 +95,7 @@ class SelectPost : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
@@ -111,7 +123,6 @@ class SelectPost : AppCompatActivity() {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 
-
     private fun getImageUri(inImage: Bitmap): Uri? {
         val bytes = ByteArrayOutputStream()
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
@@ -119,120 +130,49 @@ class SelectPost : AppCompatActivity() {
         return Uri.parse(path)
     }
 
-    /*@SuppressLint("Range")
-    private fun loadImages(contentResolver: ContentResolver, imageGrid: GridLayout, loadingProgressBar: ProgressBar) {
-        loadingProgressBar.visibility = View.VISIBLE
-
-        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
-        val cursor = contentResolver.query(uri, projection, null, null, sortOrder)
-
-        if (cursor == null) {
-            showError(IMAGE_LOAD_ERROR)
-            return
-        }
-
-        try {
-            val images = mutableListOf<Uri>()
-            var rowIndex = 0
-            var columnIndex = 0
-            var totalImagesLoaded = 0
-            while (cursor.moveToNext() && images.size < MAX_IMAGE_COUNT && totalImagesLoaded < Integer.MAX_VALUE) {
-                val imageUri: Uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)))
-                images.add(imageUri)
-
-                columnIndex++
-                if (columnIndex % NUM_COLUMNS == 0) {
-                    columnIndex = 0
-                    rowIndex++
-                }
-
-                totalImagesLoaded++
-                if (totalImagesLoaded % 12 == 0) {
-                    // Load 12 more images when the user reaches the end of the current images
-                    val remainingImagesToLoad = MAX_IMAGE_COUNT - images.size
-                    val numImagesToLoad = minOf(12, remainingImagesToLoad)
-                    if (numImagesToLoad == 0) {
-                        break
-                    }
-                }
-            }
-
-            // Calculate the number of rows needed based on the number of images and the number of columns
-            val rowCount = (images.size + NUM_COLUMNS - 1) / NUM_COLUMNS
-
-            setupGridLayout(imageGrid, images, rowCount)
-        } catch (e: Exception) {
-            showError(e.message ?: IMAGE_LOAD_ERROR)
-        } finally {
-            loadingProgressBar.visibility = View.GONE
+    private fun checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
+        } else {
+            openCamera()
         }
     }
 
-    private fun setupGridLayout(imageGrid: GridLayout, images: List<Uri>, rowCount: Int) {
-        imageGrid.rowCount = rowCount
-        val imageWidth = resources.getDimensionPixelSize(R.dimen.image_width)
-        val imageHeight = resources.getDimensionPixelSize(R.dimen.image_height)
-        val margin = resources.getDimensionPixelSize(R.dimen.image_margin)
-
-        images.forEachIndexed { index, uri ->
-            val imageView = ImageView(this)
-            imageView.setImageURI(uri)
-            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-            imageView.layoutParams = GridLayout.LayoutParams(
-                GridLayout.spec(index / NUM_COLUMNS, 1f),
-                GridLayout.spec(index % NUM_COLUMNS, 1f)
-            ).apply {
-                width = imageWidth
-                height = imageHeight
-                setMargins(margin, margin, margin, margin)
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera()
+            } else {
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
             }
-
-            imageGrid.addView(imageView)
         }
     }
 
-    @SuppressLint("Range")
-    private fun loadImages(contentResolver: ContentResolver, imageGrid: GridLayout, loadingProgressBar: ProgressBar) {
-        loadingProgressBar.visibility = View.VISIBLE
-
-        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
-        val cursor = contentResolver.query(uri, projection, null, null, sortOrder)
-
-        if (cursor == null) {
-            showError(IMAGE_LOAD_ERROR)
-            return
+    @SuppressLint("QueryPermissionsNeeded")
+    private fun openCamera() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (takePictureIntent.resolveActivity(packageManager) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+        } else {
+            Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        try {
-            val images = mutableListOf<Uri>()
-            while (cursor.moveToNext()) {
-                val imageUri: Uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)))
-                images.add(imageUri)
-            }
-
-            setupGridLayout(imageGrid, images)
-        } catch (e: Exception) {
-            showError(e.message ?: IMAGE_LOAD_ERROR)
-        } finally {
-            loadingProgressBar.visibility = View.GONE
-        }
-    }*/
-
+    @SuppressLint("StaticFieldLeak")
     private inner class loadImages(
         private val contentResolver: ContentResolver,
         private val imageGrid: GridLayout,
         private val loadingProgressBar: ProgressBar
     ) : AsyncTask<Void, Void, List<Uri>>() {
 
+        @Deprecated("Deprecated in Java")
         override fun onPreExecute() {
             super.onPreExecute()
             loadingProgressBar.visibility = View.VISIBLE
         }
 
+        @Deprecated("Deprecated in Java")
         @SuppressLint("Range")
         override fun doInBackground(vararg params: Void?): List<Uri> {
             val images = mutableListOf<Uri>()
@@ -251,6 +191,7 @@ class SelectPost : AppCompatActivity() {
             return images
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onPostExecute(result: List<Uri>?) {
             super.onPostExecute(result)
             loadingProgressBar.visibility = View.GONE
@@ -261,7 +202,11 @@ class SelectPost : AppCompatActivity() {
     }
 
     private fun setupGridLayout(imageGrid: GridLayout, images: List<Uri>) {
-        imageGrid.rowCount = (images.size + NUM_COLUMNS - 1) / NUM_COLUMNS
+        imageGrid.apply {
+            rowCount = (images.size + NUM_COLUMNS - 1) / NUM_COLUMNS
+            removeAllViews()
+        }
+
         val imageWidth = resources.getDimensionPixelSize(R.dimen.image_width)
         val imageHeight = resources.getDimensionPixelSize(R.dimen.image_height)
         val margin = resources.getDimensionPixelSize(R.dimen.image_margin)
@@ -279,32 +224,27 @@ class SelectPost : AppCompatActivity() {
                 setMargins(margin, margin, margin, margin)
             }
 
-            // Clic listener para cada imagen
             imageView.setOnClickListener {
-                if (selectedImageUri == uri) {
-                    // Si se hace clic en la imagen seleccionada nuevamente, restaurar todas las imágenes a su estado normal
-                    selectedImageUri = null
-                    resetImageGrid(imageGrid)
-                    findViewById<AppCompatButton>(R.id.nextButton).isEnabled = false
-                    findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_gray)
-                } else {
-                    // Almacenar la URI de la imagen seleccionada
-                    selectedImageUri = uri
-
-                    // Desactivar todas las imágenes
-                    resetImageGrid(imageGrid)
-
-                    // Activar la imagen seleccionada
-                    applyGrayScaleToOthers(imageGrid, imageView)
-                    imageView.isClickable = true // Permitir clic
-
-                    // Activar el botón "Next"
-                    findViewById<AppCompatButton>(R.id.nextButton).isEnabled = true
-                    findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_purple)
-                }
+                handleImageClick(uri, imageView)
             }
 
             imageGrid.addView(imageView)
+        }
+    }
+
+    private fun handleImageClick(uri: Uri, imageView: ImageView) {
+        if (selectedImageUri == uri) {
+            selectedImageUri = null
+            resetImageGrid(imageGrid)
+            findViewById<AppCompatButton>(R.id.nextButton).isEnabled = false
+            findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_gray)
+        } else {
+            selectedImageUri = uri
+            resetImageGrid(imageGrid)
+            applyGrayScaleToOthers(imageGrid, imageView)
+            imageView.isClickable = true
+            findViewById<AppCompatButton>(R.id.nextButton).isEnabled = true
+            findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_purple)
         }
     }
 
@@ -335,6 +275,10 @@ class SelectPost : AppCompatActivity() {
 
     private fun applyNormalColor(imageView: ImageView) {
         imageView.colorFilter = null
+    }
+
+    private fun loadImagesFromMediaStore() {
+        loadImages(contentResolver, imageGrid, loadingProgressBar).execute()
     }
 
     private fun showError(errorMessage: String) {

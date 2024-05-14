@@ -3,6 +3,7 @@ package com.example.wondrobe.ui.user
 import android.Manifest
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -10,6 +11,7 @@ import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.Toast
@@ -23,6 +25,7 @@ import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.ActivityUserEditBinding
 import com.example.wondrobe.ui.auth.LogIn
+import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -102,8 +105,7 @@ class UserEdit : AppCompatActivity() {
     }
 
     private fun loadUserDetails() {
-        userId = getSharedPreferences("user_data", MODE_PRIVATE)
-            .getString("user_id", "") ?: ""
+        userId = UserUtils.getUserId(this).toString()
 
         val db = FirebaseFirestore.getInstance()
         val usersCollection = db.collection("users")
@@ -353,7 +355,8 @@ class UserEdit : AppCompatActivity() {
 
     private fun savePhotoToFirebaseStorage(bitmap: Bitmap) {
         val storageRef = FirebaseStorage.getInstance().reference
-        val imagesRef = storageRef.child("/users/${userId}/profile/photo_profile.jpg")
+        val userId = UserUtils.getUserId(this).toString()
+        val imagesRef = storageRef.child("/users/$userId/profile/photo_profile.jpg")
 
         val baos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
@@ -375,7 +378,8 @@ class UserEdit : AppCompatActivity() {
 
     private fun saveBannerToFirebaseStorage(bitmap: Bitmap) {
         val storageRef = FirebaseStorage.getInstance().reference
-        val imagesRef = storageRef.child("/users/${userId}/profile/photo_banner.jpg")
+        val userId = UserUtils.getUserId(this).toString()
+        val imagesRef = storageRef.child("/users/$userId/profile/photo_banner.jpg")
 
         val baos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)

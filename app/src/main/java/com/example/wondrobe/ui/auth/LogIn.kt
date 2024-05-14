@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -18,6 +19,7 @@ import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
 import com.example.wondrobe.utils.PasswordEncryptor
 import com.example.wondrobe.utils.PasswordVisibility
+import com.example.wondrobe.utils.UserUtils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -167,7 +169,8 @@ class LogIn : AppCompatActivity() {
                     if (!documents.isEmpty) {
                         // Credenciales válidas, redirigir al usuario al MainActivity
                         val userId = documents.documents[0].id
-                        saveUserId(userId)
+                        UserUtils.saveUserId(this, userId)
+                        Log.e("Log In", userId)
                         showAlertToast("Successful login")
                         redirectToMainPage()
                     } else {
@@ -201,7 +204,7 @@ class LogIn : AppCompatActivity() {
                 if (!documents.isEmpty) {
                     // Usuario encontrado en Firestore, obtener su ID y redirigir al MainActivity
                     val userId = documents.documents[0].id
-                    saveUserId(userId)
+                    UserUtils.saveUserId(this, userId)
                     showAlertToast("Successful login")
                     redirectToMainPage()
                 } else {
@@ -213,13 +216,6 @@ class LogIn : AppCompatActivity() {
                 // Manejar errores de Firestore
                 showAlertDialog("Error retrieving user data: ${e.message}")
             }
-    }
-
-    private fun saveUserId(userId: String) {
-        val sharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("user_id", userId)
-        editor.apply()
     }
 
     private fun redirectToMainPage(){

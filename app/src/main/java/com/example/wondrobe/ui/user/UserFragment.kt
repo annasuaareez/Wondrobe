@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,6 +22,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.FragmentUserBinding
+import com.example.wondrobe.utils.UserUtils
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class UserFragment : Fragment() {
@@ -82,8 +85,9 @@ class UserFragment : Fragment() {
     }
 
     private fun loadUserDetails() {
-        userId = requireActivity().getSharedPreferences("user_data", Context.MODE_PRIVATE)
-            .getString("user_id", "") ?: ""
+        userId = UserUtils.getUserId(requireContext()).toString()
+
+        Log.e("UserFragment", "UID del usuario: $userId")
 
         val db = FirebaseFirestore.getInstance()
         val usersCollection = db.collection("users")
@@ -251,6 +255,3 @@ class UserFragment : Fragment() {
         private const val REQUEST_CODE_EDIT_USER = 1001
     }
 }
-
-
-

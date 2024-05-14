@@ -2,6 +2,7 @@
 
     import android.animation.ObjectAnimator
     import android.app.Activity
+    import android.content.Context
     import android.content.Intent
     import android.os.Bundle
     import android.util.Log
@@ -15,6 +16,7 @@
     import com.example.wondrobe.data.User
     import com.example.wondrobe.databinding.FragmentHomeBinding
     import com.example.wondrobe.ui.user.UserFollow
+    import com.example.wondrobe.utils.UserUtils
     import com.google.firebase.auth.FirebaseAuth
     import com.google.firebase.firestore.FirebaseFirestore
 
@@ -42,12 +44,14 @@
             _binding = FragmentHomeBinding.inflate(inflater, container, false)
             val root: View = binding.root
 
-            // Initialize Firebase Auth and Firestore
             auth = FirebaseAuth.getInstance()
             db = FirebaseFirestore.getInstance()
 
-            // Get the unique identifier of the current user
             currentUserUid = auth.currentUser?.uid ?: ""
+
+            val userId = UserUtils.getUserId(requireContext()).toString()
+
+            Log.e("HomeFragment", "UID del usuario: $userId")
 
             searchView = binding.searchView
             listView = binding.listUsers
@@ -77,7 +81,7 @@
                 override fun onQueryTextChange(newText: String?): Boolean {
                     newText?.let {
                         if (it.isNotBlank()) {
-                            if (it != currentUserUid && it != auth.currentUser?.displayName) {
+                            if (it != userId && it != auth.currentUser?.displayName) {
                                 searchUsers(it, listView)
                                 return true
                             } else {
