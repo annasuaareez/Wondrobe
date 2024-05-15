@@ -1,7 +1,6 @@
 package com.example.wondrobe.ui.user
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -16,15 +15,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
+import com.example.wondrobe.adapters.ImageProfileAdapter
 import com.example.wondrobe.databinding.FragmentUserBinding
 import com.example.wondrobe.utils.UserUtils
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class UserFragment : Fragment() {
 
@@ -70,7 +73,6 @@ class UserFragment : Fragment() {
         root.findViewById<Button>(R.id.editProfileButton).setOnClickListener {
             redirectToEditUser()
         }
-
         return root
     }
 
@@ -79,6 +81,7 @@ class UserFragment : Fragment() {
         // Actualizar los detalles del usuario cada vez que se muestre el fragmento
         if (!userDetailsLoaded) {
             loadUserDetails()
+            loadUserPosts()
         } else {
             updateUI()
         }
@@ -117,6 +120,63 @@ class UserFragment : Fragment() {
             .addOnFailureListener { e ->
                 showAlertToast("Error fetching user details: ${e.message}")
             }
+    }
+
+    private fun loadUserPosts() {
+        userId = UserUtils.getUserId(requireContext()).toString()
+
+        val db = FirebaseFirestore.getInstance()
+        val postsCollection = db.collection("posts")
+
+        postsCollection.whereEqualTo("userId", userId)
+            .orderBy("date", Query.Direction.DESCENDING) // Ordenar por fecha de forma descendente (más reciente primero)
+            .get()
+            .addOnSuccessListener { documents ->
+                val imageUrls = mutableListOf<String>()
+                for (document in documents) {
+                    val imageUrl = document.getString("imageUrl")
+                    if (!imageUrl.isNullOrEmpty()) {
+                        imageUrls.add(imageUrl)
+                    }
+                }
+                if (imageUrls.isNotEmpty()) {
+                    updateRecyclerView(imageUrls)
+                } else {
+                    // No hay imágenes para mostrar
+                }
+            }
+            .addOnFailureListener { e ->
+                // Manejar el error aquí
+                Log.e("loadUserPosts", "Error fetching user posts: ${e.message}")
+            }
+    }
+
+    /*private fun updateRecyclerView(imageUrls: List<String>) {
+        val recyclerView = requireView().findViewById<RecyclerView>(R.id.postView)
+        val numColumns = 2
+        val imageAdapter = ImageProfileAdapter(requireContext(), imageUrls)
+        val layoutManager = FlexboxLayoutManager(requireContext())
+
+        recyclerView.setHasFixedSize(true)
+
+        layoutManager.flexDirection = FlexDirection.ROW
+        layoutManager.flexWrap = FlexWrap.WRAP
+        layoutManager.maxLine = numColumns
+        recyclerView.layoutManager = layoutManager
+
+        recyclerView.adapter = imageAdapter
+    }*/
+
+    private fun updateRecyclerView(imageUrls: List<String>) {
+        val recyclerView = requireView().findViewById<RecyclerView>(R.id.postView)
+        val numColumns = 2
+        val imageAdapter = ImageProfileAdapter(requireContext(), imageUrls)
+        //val layoutManager = GridLayoutManager(requireContext(), numColumns)
+        val layoutManager = StaggeredGridLayoutManager(numColumns, StaggeredGridLayoutManager.VERTICAL)
+
+        recyclerView.setHasFixedSize(true)
+        recyclerView.layoutManager = layoutManager
+        recyclerView.adapter = imageAdapter
     }
 
     private fun updateUI() {

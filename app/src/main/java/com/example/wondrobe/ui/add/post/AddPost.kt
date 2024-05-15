@@ -78,7 +78,7 @@ class AddPost : AppCompatActivity() {
         val postsCollection = firestore.collection("posts")
 
         val currentDate = Calendar.getInstance().time
-        val formattedDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(currentDate)
+        val formattedDate = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(currentDate)
 
         val post = hashMapOf(
             "userId" to userId,

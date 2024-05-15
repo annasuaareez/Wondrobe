@@ -13,8 +13,8 @@ data class User(
     val profileImage: String? = null,
     val bannerImage: String? = null,
     val isAdmin: Boolean = false,
-    val followersCount: Int = 0,
-    val followingCount: Int = 0,
+    var followersCount: Int = 0,
+    var followingCount: Int = 0,
     var isFollowing: Boolean = false
 ) : Parcelable {
     constructor(parcel: Parcel) : this(

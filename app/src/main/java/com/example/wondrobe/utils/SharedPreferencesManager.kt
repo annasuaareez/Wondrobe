@@ -7,6 +7,8 @@ import com.google.gson.Gson
 object SharedPreferencesManager {
     private const val FOLLOW_STATE_PREFS = "follow_state_prefs"
     private const val FOLLOWERS_COUNT_PREFS = "followers_count_prefs"
+    private const val FOLLOWING_COUNT_PREFS = "following_count_prefs"
+    private const val USER_ID_KEY = "user_id_key"
 
     fun saveFollowingState(context: Context, userId: String?, isFollowing: Boolean) {
         val sharedPreferences = context.getSharedPreferences(FOLLOW_STATE_PREFS, Context.MODE_PRIVATE)
@@ -32,11 +34,28 @@ object SharedPreferencesManager {
         return sharedPreferences.getInt(userId, 0)
     }
 
+    fun saveFollowingCount(context: Context, userId: String?, count: Int) {
+        val sharedPreferences = context.getSharedPreferences(FOLLOWING_COUNT_PREFS, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putInt(userId, count)
+        editor.apply()
+    }
+
+    fun getFollowingCount(context: Context, userId: String?): Int {
+        val sharedPreferences = context.getSharedPreferences(FOLLOWING_COUNT_PREFS, Context.MODE_PRIVATE)
+        return sharedPreferences.getInt(userId, 0)
+    }
+
     private const val PREF_CURRENT_USER = "current_user"
 
     fun getCurrentUser(context: Context): User? {
         val sharedPreferences = context.getSharedPreferences(PREF_CURRENT_USER, Context.MODE_PRIVATE)
         val userJson = sharedPreferences.getString(PREF_CURRENT_USER, null)
         return Gson().fromJson(userJson, User::class.java)
+    }
+
+    fun getUserId(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(USER_ID_KEY, null)
     }
 }

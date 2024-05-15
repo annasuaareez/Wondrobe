@@ -5,4 +5,5 @@
     <dimen name="image_width">55dp</dimen>
     <dimen name="image_height">55dp</dimen>
     <dimen name="image_margin">3dp</dimen>
+    <dimen name="grid_spacing">0dp</dimen>
 </resources>

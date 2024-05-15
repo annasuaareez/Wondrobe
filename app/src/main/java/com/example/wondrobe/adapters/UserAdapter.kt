@@ -1,4 +1,4 @@
-package com.example.wondrobe.ui.home
+package com.example.wondrobe.adapters
 
 import android.content.Context
 import android.util.Log
