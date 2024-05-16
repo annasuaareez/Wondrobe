@@ -7,8 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.R
@@ -26,6 +28,8 @@ class AddPost : AppCompatActivity() {
     private lateinit var descriptionEditText: EditText
     private lateinit var imageView: ImageView
     private lateinit var imageUriString: String
+    private lateinit var publishButton: AppCompatButton
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +37,12 @@ class AddPost : AppCompatActivity() {
 
         val userId = UserUtils.getUserId(this)
         val backIcon = findViewById<ImageView>(R.id.backIconActivity)
-        val publishButton = findViewById<AppCompatButton>(R.id.publishButton)
 
         titleEditText = findViewById(R.id.titlePost)
         descriptionEditText = findViewById(R.id.descriptionPost)
         imageView = findViewById(R.id.imageViewPost)
+        publishButton = findViewById(R.id.publishButton)
+        progressBar = findViewById(R.id.progressBarAdd)
 
         imageUriString = intent.getStringExtra("imageUri") ?: ""
 
@@ -60,6 +65,9 @@ class AddPost : AppCompatActivity() {
                 Log.e("User not Authentic", "User not Authentic")
             } else {
                 Log.e("AddPost", userId)
+                publishButton.isEnabled = false
+                publishButton.setBackgroundResource(R.drawable.button_gray)
+                progressBar.visibility = View.VISIBLE
                 publishPost(userId)
             }
         }
@@ -98,10 +106,16 @@ class AddPost : AppCompatActivity() {
                             .update("imageUrl", imageUrl)
                             .addOnSuccessListener {
                                 showAlertToast("Post published successfully")
-                                finish()
+                                navigateToSelectPost()
+                                //finish()
                             }
                             .addOnFailureListener { e ->
                                 showAlertToast("Error saving image URL: ${e.message}")
+                            }
+                            .addOnCompleteListener {
+                                // Ocultar el ProgressBar y habilitar el botón nuevamente
+                                progressBar.visibility = View.INVISIBLE
+                                publishButton.isEnabled = true
                             }
                     } else {
                         showAlertToast("Error saving image")

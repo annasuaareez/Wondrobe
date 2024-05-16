@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.FragmentAddBinding
+import com.example.wondrobe.ui.add.clothes.SelectClothes
 import com.example.wondrobe.ui.add.post.SelectPost
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -24,6 +25,7 @@ class AddFragment : BottomSheetDialogFragment() {
 
         binding.closeAddFragment.setOnClickListener(closeFragmentOnClickListener)
         binding.postButton.setOnClickListener(postButtonOnClickListener)
+        binding.clothesButton.setOnClickListener(clothesButtonOnClickListener)
 
         isCancelable = false
 
@@ -41,6 +43,17 @@ class AddFragment : BottomSheetDialogFragment() {
     private val postButtonOnClickListener = View.OnClickListener {
         try {
             val intent = Intent(requireContext(), SelectPost::class.java)
+            startActivity(intent)
+            requireActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            //requireActivity().finish()
+        } catch (e: Exception) {
+            Log.e("AddFragment", "Error replacing fragment: $e")
+        }
+    }
+
+    private val clothesButtonOnClickListener = View.OnClickListener {
+        try {
+            val intent = Intent(requireContext(), SelectClothes::class.java)
             startActivity(intent)
             requireActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
             //requireActivity().finish()

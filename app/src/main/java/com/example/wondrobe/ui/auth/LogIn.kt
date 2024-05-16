@@ -4,6 +4,7 @@ import ValidationUtils
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
@@ -31,6 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class LogIn : AppCompatActivity() {
     private val RC_SIGN_IN = 9001
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
@@ -149,7 +152,7 @@ class LogIn : AppCompatActivity() {
                 }
             }
     }
-
+    
     private fun loginUser(
         username: String,
         password: String
@@ -158,15 +161,18 @@ class LogIn : AppCompatActivity() {
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
             val encryptedPassword = PasswordEncryptor().encryptPassword(password)
+            Log.e("Contraseña incresada","")
 
             val db = FirebaseFirestore.getInstance()
             val usersCollection = db.collection("users")
 
             usersCollection.whereEqualTo("username", username)
-                .whereEqualTo("password", encryptedPassword)
+                //.whereEqualTo("password", encryptedPassword)
                 .get()
                 .addOnSuccessListener { documents ->
-                    if (!documents.isEmpty) {
+                    val encryptedPasswordDB = documents.documents[0].getString("password")
+
+                    if (encryptedPassword == encryptedPasswordDB) {
                         // Credenciales válidas, redirigir al usuario al MainActivity
                         val userId = documents.documents[0].id
                         UserUtils.saveUserId(this, userId)

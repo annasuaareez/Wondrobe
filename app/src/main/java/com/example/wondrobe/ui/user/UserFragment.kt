@@ -15,7 +15,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
@@ -25,11 +24,12 @@ import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
 import com.example.wondrobe.adapters.ImageProfileAdapter
 import com.example.wondrobe.databinding.FragmentUserBinding
+import com.example.wondrobe.ui.user.PostDetails.DetailsPost
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
-class UserFragment : Fragment() {
+class UserFragment : Fragment(), ImageProfileAdapter.OnImageClickListener {
 
     private var _binding: FragmentUserBinding? = null
 
@@ -76,15 +76,15 @@ class UserFragment : Fragment() {
         return root
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Actualizar los detalles del usuario cada vez que se muestre el fragmento
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         if (!userDetailsLoaded) {
             loadUserDetails()
             loadUserPosts()
         } else {
             updateUI()
         }
+
     }
 
     private fun loadUserDetails() {
@@ -133,14 +133,17 @@ class UserFragment : Fragment() {
             .get()
             .addOnSuccessListener { documents ->
                 val imageUrls = mutableListOf<String>()
+                val postIds = mutableListOf<String>()
                 for (document in documents) {
                     val imageUrl = document.getString("imageUrl")
+                    val postId = document.id
                     if (!imageUrl.isNullOrEmpty()) {
                         imageUrls.add(imageUrl)
+                        postIds.add(postId)
                     }
                 }
                 if (imageUrls.isNotEmpty()) {
-                    updateRecyclerView(imageUrls)
+                    updateRecyclerView(imageUrls, postIds)
                 } else {
                     // No hay imágenes para mostrar
                 }
@@ -167,11 +170,10 @@ class UserFragment : Fragment() {
         recyclerView.adapter = imageAdapter
     }*/
 
-    private fun updateRecyclerView(imageUrls: List<String>) {
+    private fun updateRecyclerView(imageUrls: List<String>, postIds: List<String>) {
         val recyclerView = requireView().findViewById<RecyclerView>(R.id.postView)
         val numColumns = 2
-        val imageAdapter = ImageProfileAdapter(requireContext(), imageUrls)
-        //val layoutManager = GridLayoutManager(requireContext(), numColumns)
+        val imageAdapter = ImageProfileAdapter(requireContext(), imageUrls, postIds, this)
         val layoutManager = StaggeredGridLayoutManager(numColumns, StaggeredGridLayoutManager.VERTICAL)
 
         recyclerView.setHasFixedSize(true)
@@ -299,16 +301,23 @@ class UserFragment : Fragment() {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_EDIT_USER && resultCode == Activity.RESULT_OK) {
             loadUserDetails()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onImageClick(postId: String) {
+        val intent = Intent(activity, DetailsPost::class.java)
+        Log.e("Post Id", postId)
+        intent.putExtra("PostID", postId)
+        startActivity(intent)
     }
 
     companion object {

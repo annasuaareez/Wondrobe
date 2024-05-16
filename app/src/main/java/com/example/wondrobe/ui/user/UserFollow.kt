@@ -18,7 +18,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
-import com.example.wondrobe.adapters.ImageProfileAdapter
+import com.example.wondrobe.adapters.ImageFollowAdapter
 import com.example.wondrobe.data.User
 import com.example.wondrobe.utils.SharedPreferencesManager
 import com.example.wondrobe.utils.UserUtils
@@ -211,7 +211,7 @@ class UserFollow : AppCompatActivity() {
     private fun updatePostImages(imageUrls: List<String>) {
         val recyclerView = findViewById<RecyclerView>(R.id.followView)
         val numColumns = 2
-        val imageProfileAdapter = ImageProfileAdapter(this, imageUrls)
+        val imageProfileAdapter = ImageFollowAdapter(this, imageUrls)
         val layoutManager = StaggeredGridLayoutManager(numColumns, StaggeredGridLayoutManager.VERTICAL)
 
         recyclerView.setHasFixedSize(true)

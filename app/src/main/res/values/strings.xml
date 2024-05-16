@@ -53,4 +53,7 @@
     <string name="enter_description">Enter description</string>
     <string name="enter_title">Enter title</string>
     <string name="image_desc">Image description</string>
+    <string name="post_tittle">Post tittle</string>
+    <string name="post_description">Post description</string>
+    <string name="post_date">Post date</string>
 </resources>

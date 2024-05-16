@@ -70,11 +70,14 @@ dependencies {
     //Java Mail
     implementation("com.sun.mail:android-mail:1.6.2")
     implementation("com.sun.mail:android-activation:1.6.2")
-    //Navegacion
+    //Navigation
     implementation ("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation ("androidx.navigation:navigation-ui-ktx:2.7.7")
     //Flexbox
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
+    //RSA Password
+    implementation ("org.bouncycastle:bcprov-jdk15on:1.68")
+    implementation ("org.bouncycastle:bcpkix-jdk15on:1.68")
 
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     testImplementation("junit:junit:4.13.2")

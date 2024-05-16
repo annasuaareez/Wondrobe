@@ -25,11 +25,13 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import java.security.KeyPair
 
 class SignUp : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private val RC_SIGN_IN = 9001
     private val RC_TERMS_AND_CONDITIONS = 33
+    private lateinit var rsaKeyPair: KeyPair
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
