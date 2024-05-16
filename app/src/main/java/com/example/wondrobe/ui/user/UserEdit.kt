@@ -3,7 +3,6 @@ package com.example.wondrobe.ui.user
 import android.Manifest
 import android.app.Activity
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -11,7 +10,6 @@ import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.Toast
@@ -601,6 +599,40 @@ class UserEdit : AppCompatActivity() {
             // Error al eliminar la imagen del banner
             showAlertToast("Error deleting banner image: ${e.message}")
         }
+
+        // Eliminar otras fotos del usuario que estén almacenadas
+        val otherPhotosRef = storageRef.child("users/$userId/")
+        otherPhotosRef.listAll()
+            .addOnSuccessListener { listResult ->
+                for (fileRef in listResult.items) {
+                    fileRef.delete().addOnSuccessListener {
+                        // Foto eliminada correctamente
+                    }.addOnFailureListener { e ->
+                        showAlertToast("Error deleting photo: ${e.message}")
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error listing user photos: ${e.message}")
+            }
+
+        // Eliminar documentos en los que las fotos tienen como atributo el ID del usuario
+        val db = FirebaseFirestore.getInstance()
+        val photosCollection = db.collection("posts")
+        photosCollection.whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    document.reference.delete().addOnSuccessListener {
+                        // Documento de la foto eliminado correctamente
+                    }.addOnFailureListener { e ->
+                        showAlertToast("Error deleting photo document: ${e.message}")
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error listing photo documents: ${e.message}")
+            }
     }
 
     private fun showAlertDialog(message: String) {

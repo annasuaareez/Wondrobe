@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_calendar"
-        android:name="com.example.wondrobe.ui.calendar.CalendarFragment"
-        android:label="@string/title_calendar"
-        tools:layout="@layout/fragment_calendar" />
+        android:id="@+id/navigation_save"
+        android:name="com.example.wondrobe.ui.save.SaveFragment"
+        android:label="@string/title_save"
+        tools:layout="@layout/fragment_save" />
 
     <fragment
         android:id="@+id/navigation_add"
