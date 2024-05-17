@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.user.PostDetails.DetailsPost">
+
+    <LinearLayout
+        android:id="@+id/navigationBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/editProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="@string/edit_post"
+            style="@style/TextView.DarkTheme"
+            android:fontFamily="@font/kollektif"
+            android:textSize="20sp"
+            android:layout_weight="1"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/savePost"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/save"
+            android:textColor="@color/white"
+            android:fontFamily="@font/kollektif"
+            android:textSize="18sp"
+            android:background="@drawable/button_purple"
+            android:outlineProvider="none"/>
+
+    </LinearLayout>
+
+    <!-- Aquí empieza el contenido que quieres debajo del header -->
+    <ImageView
+        android:id="@+id/postImage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:padding="10dp"
+        android:layout_marginTop="7dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/navigationBar"
+        app:layout_constraintHeight_max="450dp"/>
+
+    <!-- EditText "Tittle Post" -->
+    <EditText
+        android:id="@+id/newTitlePost"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="@string/enter_new_username"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:gravity="center_vertical"
+        android:fontFamily="@font/kollektif"
+        android:textSize="15sp"
+        android:paddingHorizontal="12dp"
+        style="@style/EditText.DarkTheme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/postImage"
+        android:layout_marginTop="11dp"
+        android:background="@drawable/button_white"/>
+
+    <!-- EditText "Tittle Post" -->
+    <EditText
+        android:id="@+id/newDescriptionPost"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="@string/enter_new_username"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:gravity="center_vertical"
+        android:fontFamily="@font/kollektif"
+        android:textSize="15sp"
+        android:paddingHorizontal="12dp"
+        style="@style/EditText.DarkTheme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/newTitlePost"
+        android:layout_marginTop="11dp"
+        android:background="@drawable/button_white"/>
+
+    <TextView
+        android:id="@+id/newPostDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/date_post"
+        style="@style/TextView.DarkTheme"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/newDescriptionPost"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:paddingHorizontal="16dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/deleteAccountButton"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_white"
+        android:fontFamily="@font/kollektif"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:text="@string/delete_post"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="25dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
