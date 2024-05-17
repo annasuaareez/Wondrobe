@@ -56,4 +56,7 @@
     <string name="post_tittle">Post tittle</string>
     <string name="post_description">Post description</string>
     <string name="post_date">Post date</string>
+    <string name="date_post">Date Post</string>
+    <string name="delete_post">DELETE POST</string>
+    <string name="edit_post">EDIT POST</string>
 </resources>

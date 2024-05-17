@@ -27,6 +27,7 @@ import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import java.io.ByteArrayOutputStream
 
 class UserEdit : AppCompatActivity() {
@@ -562,7 +563,7 @@ class UserEdit : AppCompatActivity() {
                     ?.addOnFailureListener { e ->
                         showAlertToast("Error deleting account: ${e.message}")
                     }
-                    ?: run {
+                    ?: run {//Esto ya deberia de funcionar porque todos se guardan en el authentication
                         // Si el usuario no está autenticado, solo eliminamos los datos asociados en Firestore y Storage
                         showAlertToast("Account deleted successfully.")
                         // Eliminar datos en el almacenamiento de Firebase si existen
@@ -583,7 +584,9 @@ class UserEdit : AppCompatActivity() {
     private fun deleteStorageData() {
         // Eliminar datos en el almacenamiento de Firebase si existen
         val storageRef = FirebaseStorage.getInstance().reference
-        val profileImageRef = storageRef.child("users/$userId/profile/photo_profile.jpg")
+        val userFolderRef = storageRef.child("users/$userId/")
+
+        /*val profileImageRef = storageRef.child("users/$userId/profile/photo_profile.jpg")
         val bannerImageRef = storageRef.child("users/$userId/profile/photo_banner.jpg")
 
         profileImageRef.delete().addOnSuccessListener {
@@ -614,6 +617,26 @@ class UserEdit : AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 showAlertToast("Error listing user photos: ${e.message}")
+            } */
+
+        userFolderRef.listAll()
+            .addOnSuccessListener { listResult ->
+                // Eliminar todos los archivos en la carpeta del usuario
+                for (fileRef in listResult.items) {
+                    fileRef.delete().addOnSuccessListener {
+                        // Archivo eliminado correctamente
+                    }.addOnFailureListener { e ->
+                        showAlertToast("Error deleting file: ${e.message}")
+                    }
+                }
+
+                // Recursivamente eliminar todos los subdirectorios y sus archivos
+                for (prefix in listResult.prefixes) {
+                    deleteDirectory(prefix)
+                }
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error listing user files: ${e.message}")
             }
 
         // Eliminar documentos en los que las fotos tienen como atributo el ID del usuario
@@ -634,6 +657,27 @@ class UserEdit : AppCompatActivity() {
                 showAlertToast("Error listing photo documents: ${e.message}")
             }
     }
+
+    private fun deleteDirectory(directoryRef: StorageReference) {
+        directoryRef.listAll()
+            .addOnSuccessListener { listResult ->
+                for (fileRef in listResult.items) {
+                    fileRef.delete().addOnSuccessListener {
+                        // Archivo eliminado correctamente
+                    }.addOnFailureListener { e ->
+                        showAlertToast("Error deleting file: ${e.message}")
+                    }
+                }
+
+                for (prefix in listResult.prefixes) {
+                    deleteDirectory(prefix)
+                }
+            }
+            .addOnFailureListener { e ->
+                showAlertToast("Error listing directory files: ${e.message}")
+            }
+    }
+
 
     private fun showAlertDialog(message: String) {
         val alertDialogBuilder = AlertDialog.Builder(this)

@@ -111,7 +111,9 @@ class UserFragment : Fragment(), ImageProfileAdapter.OnImageClickListener {
                     userDetailsLoaded = true
 
                     // Actualizar la interfaz de usuario incluyendo la foto
-                    updateUI()
+                    if (isAdded) {
+                        updateUI()
+                    }
 
                 } else {
                     showAlertToast("User details not found.")
@@ -314,9 +316,11 @@ class UserFragment : Fragment(), ImageProfileAdapter.OnImageClickListener {
     }
 
     override fun onImageClick(postId: String) {
+        userId = UserUtils.getUserId(requireContext()).toString()
         val intent = Intent(activity, DetailsPost::class.java)
-        Log.e("Post Id", postId)
+        Log.e("Post Id and User Id", postId)
         intent.putExtra("PostID", postId)
+        intent.putExtra("UserID", userId)
         startActivity(intent)
     }
 
