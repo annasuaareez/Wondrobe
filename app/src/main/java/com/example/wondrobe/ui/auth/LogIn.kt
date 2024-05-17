@@ -3,6 +3,7 @@ package com.example.wondrobe.ui.auth
 import ValidationUtils
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.net.ConnectivityManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -39,6 +40,8 @@ class LogIn : AppCompatActivity() {
         setContentView(R.layout.activity_log_in)
 
         supportActionBar?.hide()
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         // Cambiar la imagen de acuerdo con el tema actual
         val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK

@@ -1,6 +1,7 @@
 package com.example.wondrobe.ui.auth
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -10,6 +11,8 @@ class TermsAndConditions : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terms_and_conditions)
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         val acceptButton = findViewById<Button>(R.id.acceptButton)
         acceptButton.setOnClickListener {

@@ -3,6 +3,7 @@ package com.example.wondrobe.ui.auth
 import ValidationUtils
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.CheckBox
 import android.widget.EditText
@@ -38,6 +39,8 @@ class SignUp : AppCompatActivity() {
         setContentView(R.layout.activity_sign_up)
 
         supportActionBar?.hide()
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         mAuth = FirebaseAuth.getInstance()
 

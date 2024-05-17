@@ -1,6 +1,7 @@
 package com.example.wondrobe.ui.auth
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +16,8 @@ class Charge: AppCompatActivity() {
         Thread.sleep(splashTimeOut)
         installSplashScreen()
         setContentView(R.layout.activity_charge)
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         val buttonLogIn = findViewById<Button>(R.id.buttonLogIn)
         val buttonSignUp = findViewById<Button>(R.id.buttonSignUp)

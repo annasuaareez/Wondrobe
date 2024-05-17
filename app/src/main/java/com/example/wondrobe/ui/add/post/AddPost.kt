@@ -1,6 +1,7 @@
 package com.example.wondrobe.ui.add.post
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +35,8 @@ class AddPost : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_post)
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         val userId = UserUtils.getUserId(this)
         val backIcon = findViewById<ImageView>(R.id.backIconActivity)
