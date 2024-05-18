@@ -12,7 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -43,6 +45,8 @@ class UserEdit : AppCompatActivity() {
     private val PROFILE_GALLERY_REQUEST_CODE_BANNER = 105
 
     private lateinit var binding: ActivityUserEditBinding
+    private lateinit var loadingProgressBar: ProgressBar
+    private var pendingOperationsCount: Int = 0
     private lateinit var userId: String
     private lateinit var firstName: String
     private lateinit var username: String
@@ -64,6 +68,8 @@ class UserEdit : AppCompatActivity() {
 
         loadUserDetails()
 
+        loadingProgressBar = findViewById(R.id.loadingProgressBar)
+
         binding.cameraIconProfile.setOnClickListener {
             showPhotoOptionsDialog()
         }
@@ -73,19 +79,27 @@ class UserEdit : AppCompatActivity() {
         }
 
         binding.saveChange.setOnClickListener {
+            loadingProgressBar.visibility = View.VISIBLE
+
             val newUsername = binding.newUsernameEditText.text.toString()
             val newFirstName = binding.newNameEditText.text.toString()
             val newBiography = binding.newBiographyEditText.text.toString()
 
             if (validateInputs(newUsername, newFirstName, newBiography)) {
+                pendingOperationsCount = 0
+
                 // Verificar si el nuevo nombre de usuario es diferente al nombre de usuario actual
                 if (newUsername != username) {
                     // El usuario desea cambiar su nombre de usuario
                     saveUserData(newUsername, newFirstName, newBiography)
+                    pendingOperationsCount++
                 } else {
                     // El usuario no desea cambiar su nombre de usuario, solo actualiza la información adicional
                     saveAdditionalUserData(newFirstName, newBiography)
+                    pendingOperationsCount++
                 }
+            } else {
+                loadingProgressBar.visibility = View.GONE
             }
         }
 
@@ -271,6 +285,8 @@ class UserEdit : AppCompatActivity() {
                     usersCollection.document(userId)
                         .update(user)
                         .addOnSuccessListener {
+                            pendingOperationsCount--
+
                             showAlertToast("User data updated successfully.")
 
                             // Guardar la foto en el almacenamiento de Firebase y obtener la URL
@@ -289,10 +305,16 @@ class UserEdit : AppCompatActivity() {
                             resultIntent.putExtra("profileImage", photoUrl)
                             resultIntent.putExtra("bannerImage", bannerUrl)
                             setResult(Activity.RESULT_OK, resultIntent)
-                            finish()
+
+                            if (pendingOperationsCount == 0) {
+                                loadingProgressBar.visibility = View.GONE
+                                finish()
+                            }
                         }
                         .addOnFailureListener { e ->
+                            loadingProgressBar.visibility = View.GONE
                             showAlertToast("Error updating user data: ${e.message}")
+                            finish()
                         }
                 } else {
                     // El nombre de usuario ya está registrado
@@ -330,6 +352,8 @@ class UserEdit : AppCompatActivity() {
         usersCollection.document(userId)
             .update(user)
             .addOnSuccessListener {
+                pendingOperationsCount--
+
                 showAlertToast("User data updated successfully.")
 
                 // Guardar la foto en el almacenamiento de Firebase y obtener la URL
@@ -348,10 +372,16 @@ class UserEdit : AppCompatActivity() {
                 resultIntent.putExtra("profileImage", photoUrl)
                 resultIntent.putExtra("bannerImage", bannerUrl)
                 setResult(Activity.RESULT_OK, resultIntent)
-                finish()
+
+                if (pendingOperationsCount == 0) {
+                    loadingProgressBar.visibility = View.GONE
+                    finish()
+                }
             }
             .addOnFailureListener { e ->
+                loadingProgressBar.visibility = View.GONE
                 showAlertToast("Error updating user data: ${e.message}")
+                finish()
             }
     }
 

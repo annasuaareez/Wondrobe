@@ -11,7 +11,6 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.net.Uri
 import android.os.AsyncTask
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -20,13 +19,12 @@ import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import com.example.wondrobe.R
-import com.example.wondrobe.ui.add.post.AddPost
-import com.example.wondrobe.ui.add.post.SelectPost
 import java.io.ByteArrayOutputStream
 
 class SelectClothes : AppCompatActivity() {
@@ -34,7 +32,7 @@ class SelectClothes : AppCompatActivity() {
         private const val NUM_COLUMNS = 4
         private const val MAX_IMAGE_COUNT = 60
         private const val IMAGE_LOAD_ERROR = "Error loading images"
-        private const val REQUEST_IMAGE_CAPTURE = 11
+        private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_GALLERY = 123
         private const val REQUEST_CAMERA_PERMISSION = 100
     }
@@ -60,6 +58,7 @@ class SelectClothes : AppCompatActivity() {
 
         loadImagesFromMediaStore()
         setupCloseIcon(closeIcon)
+        //loadImages(contentResolver, imageGrid, loadingProgressBar).execute()
 
         nextButton.isEnabled = false
         nextButton.setBackgroundResource(R.drawable.button_gray)
@@ -86,7 +85,7 @@ class SelectClothes : AppCompatActivity() {
         galleryIcon.setOnClickListener {
             val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             pickPhotoIntent.type = "image/*"
-            startActivityForResult(pickPhotoIntent, SelectClothes.REQUEST_GALLERY)
+            startActivityForResult(pickPhotoIntent, REQUEST_GALLERY)
         }
 
     }
@@ -105,7 +104,7 @@ class SelectClothes : AppCompatActivity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == SelectClothes.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as Bitmap
             val uri = getImageUri(imageBitmap)
             if (uri != null) {
@@ -113,7 +112,7 @@ class SelectClothes : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Error al obtener la URI de la imagen", Toast.LENGTH_SHORT).show()
             }
-        } else if (requestCode == SelectClothes.REQUEST_GALLERY && resultCode == RESULT_OK) {
+        } else if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK) {
             val imageUri = data?.data
             if (imageUri != null) {
                 openAddClothesActivity(imageUri)
@@ -128,6 +127,7 @@ class SelectClothes : AppCompatActivity() {
         intent.putExtra("imageUri", imageUri.toString())
         startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        finish()
     }
 
     private fun getImageUri(inImage: Bitmap): Uri? {
@@ -139,9 +139,7 @@ class SelectClothes : AppCompatActivity() {
 
     private fun checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
-                SelectClothes.REQUEST_CAMERA_PERMISSION
-            )
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
         } else {
             openCamera()
         }
@@ -149,7 +147,7 @@ class SelectClothes : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == SelectClothes.REQUEST_CAMERA_PERMISSION) {
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openCamera()
             } else {
@@ -162,7 +160,7 @@ class SelectClothes : AppCompatActivity() {
     private fun openCamera() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
-            startActivityForResult(takePictureIntent, SelectClothes.REQUEST_IMAGE_CAPTURE)
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
         } else {
             Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
         }
@@ -191,7 +189,7 @@ class SelectClothes : AppCompatActivity() {
             val cursor = contentResolver.query(uri, projection, null, null, sortOrder)
 
             cursor?.use {
-                while (it.moveToNext() && images.size < SelectClothes.MAX_IMAGE_COUNT) {
+                while (it.moveToNext() && images.size < MAX_IMAGE_COUNT) {
                     val imageUri: Uri = Uri.parse(it.getString(it.getColumnIndex(MediaStore.Images.Media.DATA)))
                     images.add(imageUri)
                 }
@@ -206,13 +204,13 @@ class SelectClothes : AppCompatActivity() {
             loadingProgressBar.visibility = View.GONE
             result?.let {
                 setupGridLayout(imageGrid, it)
-            } ?: showError(SelectClothes.IMAGE_LOAD_ERROR)
+            } ?: showError(IMAGE_LOAD_ERROR)
         }
     }
 
     private fun setupGridLayout(imageGrid: GridLayout, images: List<Uri>) {
         imageGrid.apply {
-            rowCount = (images.size + SelectClothes.NUM_COLUMNS - 1) / SelectClothes.NUM_COLUMNS
+            rowCount = (images.size + NUM_COLUMNS - 1) / NUM_COLUMNS
             removeAllViews()
         }
 
@@ -225,8 +223,8 @@ class SelectClothes : AppCompatActivity() {
             imageView.setImageURI(uri)
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
             imageView.layoutParams = GridLayout.LayoutParams(
-                GridLayout.spec(index / SelectClothes.NUM_COLUMNS, 1f),
-                GridLayout.spec(index % SelectClothes.NUM_COLUMNS, 1f)
+                GridLayout.spec(index / NUM_COLUMNS, 1f),
+                GridLayout.spec(index % NUM_COLUMNS, 1f)
             ).apply {
                 width = imageWidth
                 height = imageHeight
@@ -252,8 +250,8 @@ class SelectClothes : AppCompatActivity() {
             resetImageGrid(imageGrid)
             applyGrayScaleToOthers(imageGrid, imageView)
             imageView.isClickable = true
-            findViewById<AppCompatButton>(R.id.nextButton).isEnabled = true
-            findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_purple)
+            findViewById<AppCompatButton>(R.id.nextButtonClothes).isEnabled = true
+            findViewById<AppCompatButton>(R.id.nextButtonClothes).setBackgroundResource(R.drawable.button_purple)
         }
 
     }
@@ -294,5 +292,4 @@ class SelectClothes : AppCompatActivity() {
     private fun showError(errorMessage: String) {
         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
     }
-
 }

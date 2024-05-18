@@ -123,31 +123,31 @@
 
         private fun searchUsers(query: String, listView: ListView) {
             val db = FirebaseFirestore.getInstance()
+            val userId = UserUtils.getUserId(requireContext()).toString()
+
             db.collection("users")
                 .whereGreaterThanOrEqualTo("username", query)
                 .whereLessThan("username", query + "\uf8ff")
-                //.whereNotEqualTo("uid", currentUserUid)
                 .limit(8)
                 .get()
                 .addOnSuccessListener { documents ->
                     val usersList = mutableListOf<User>()
                     for (document in documents) {
                         val uid = document.id
-                        val email = document.getString("email") ?: ""
-                        val username = document.getString("username") ?: ""
-                        val firstName = document.getString("firstName") ?: ""
-                        val biography = document.getString("biography") ?: ""
-                        val profileImage = document.getString("profileImage") ?: ""
-                        val bannerImage = document.getString("bannerImage") ?: ""
-                        //val isAdmin = document.getBoolean("isAdmin") ?: false
-                        val followersCount = document.getLong("followersCount")?.toInt() ?: 0
-                        val followingCount = document.getLong("followingCount")?.toInt() ?: 0
+                        if (uid != userId) {
+                            val email = document.getString("email") ?: ""
+                            val username = document.getString("username") ?: ""
+                            val firstName = document.getString("firstName") ?: ""
+                            val biography = document.getString("biography") ?: ""
+                            val profileImage = document.getString("profileImage") ?: ""
+                            val bannerImage = document.getString("bannerImage") ?: ""
+                            val followersCount = document.getLong("followersCount")?.toInt() ?: 0
+                            val followingCount = document.getLong("followingCount")?.toInt() ?: 0
 
-                        //Log.e("IMAGEN", profileImage)
-
-                        val user = User(uid, email,username, firstName,biography,"", profileImage, bannerImage,
-                            false,followersCount, followingCount)
-                        usersList.add(user)
+                            val user = User(uid, email, username, firstName, biography, "", profileImage, bannerImage,
+                                false, followersCount, followingCount)
+                            usersList.add(user)
+                        }
                     }
                     updateListView(usersList, listView)
                 }

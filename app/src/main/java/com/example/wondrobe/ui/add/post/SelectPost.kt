@@ -128,6 +128,7 @@ class SelectPost : AppCompatActivity() {
         intent.putExtra("imageUri", imageUri.toString())
         startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        finish()
     }
 
     private fun getImageUri(inImage: Bitmap): Uri? {
