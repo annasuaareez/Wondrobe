@@ -173,18 +173,23 @@ class LogIn : AppCompatActivity() {
                 //.whereEqualTo("password", encryptedPassword)
                 .get()
                 .addOnSuccessListener { documents ->
-                    val encryptedPasswordDB = documents.documents[0].getString("password")
+                    if (!documents.isEmpty) {
+                        val encryptedPasswordDB = documents.documents[0].getString("password")
 
-                    if (encryptedPassword == encryptedPasswordDB) {
-                        // Credenciales válidas, redirigir al usuario al MainActivity
-                        val userId = documents.documents[0].id
-                        UserUtils.saveUserId(this, userId)
-                        Log.e("Log In", userId)
-                        showAlertToast("Successful login")
-                        redirectToMainPage()
+                        if (encryptedPassword == encryptedPasswordDB) {
+                            // Credenciales válidas, redirigir al usuario al MainActivity
+                            val userId = documents.documents[0].id
+                            UserUtils.saveUserId(this, userId)
+                            Log.e("Log In", userId)
+                            showAlertToast("Successful login")
+                            redirectToMainPage()
+                        } else {
+                            // Credenciales inválidas, mostrar diálogo
+                            showAlertDialog("Credentials are not valid")
+                        }
                     } else {
-                        // Credenciales inválidas, mostrar diálogo
-                        showAlertDialog("Credentials are not valid")
+                        // La lista de documentos está vacía, el usuario no está registrado
+                        showAlertDialog("User not found")
                     }
                 }
                 .addOnFailureListener { e ->
