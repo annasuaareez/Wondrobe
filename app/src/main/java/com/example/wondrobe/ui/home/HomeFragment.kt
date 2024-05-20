@@ -167,9 +167,11 @@
             listView.adapter = adapter
 
             listView.setOnItemClickListener { parent, view, position, id ->
+                val userId = UserUtils.getUserId(requireContext()).toString()
                 val selectedUser = usersList[position]
                 val intent = Intent(requireContext(), UserFollow::class.java)
                 intent.putExtra("selected_user", selectedUser)
+                intent.putExtra("UserID", userId)
                 startActivityForResult(intent, REQUEST_USER_FOLLOW)
             }
         }

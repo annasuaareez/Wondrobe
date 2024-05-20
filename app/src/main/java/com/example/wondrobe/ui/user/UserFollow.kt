@@ -21,12 +21,13 @@ import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
 import com.example.wondrobe.adapters.ImageFollowAdapter
 import com.example.wondrobe.data.User
+import com.example.wondrobe.ui.user.PostDetails.DetailsPostFollow
 import com.example.wondrobe.utils.SharedPreferencesManager
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
-class UserFollow : AppCompatActivity() {
+class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener {
     private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,14 +133,17 @@ class UserFollow : AppCompatActivity() {
                     .get()
                     .addOnSuccessListener { documents ->
                         val imageUrls = mutableListOf<String>()
+                        val postIds = mutableListOf<String>()
                         for (document in documents) {
                             val imageUrl = document.getString("imageUrl")
+                            val postId = document.id
                             if (!imageUrl.isNullOrEmpty()) {
                                 imageUrls.add(imageUrl)
+                                postIds.add(postId)
                             }
                         }
                         if (imageUrls.isNotEmpty()) {
-                            updatePostImages(imageUrls)
+                            updatePostImages(imageUrls, postIds)
                         } else {
                             // No hay imagenes
                         }
@@ -211,14 +215,22 @@ class UserFollow : AppCompatActivity() {
         }
     }
 
-    private fun updatePostImages(imageUrls: List<String>) {
+    private fun updatePostImages(imageUrls: List<String>, postIds: List<String>) {
         val recyclerView = findViewById<RecyclerView>(R.id.followView)
         val numColumns = 2
-        val imageProfileAdapter = ImageFollowAdapter(this, imageUrls)
+        val imageFollowAdapter = ImageFollowAdapter(this, imageUrls, postIds, this)
         val layoutManager = StaggeredGridLayoutManager(numColumns, StaggeredGridLayoutManager.VERTICAL)
 
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = imageProfileAdapter
+        recyclerView.adapter = imageFollowAdapter
+    }
+
+    override fun onImageClick(postId: String) {
+        val currentUserId = UserUtils.getUserId(this)
+        val intent = Intent(this, DetailsPostFollow::class.java)
+        intent.putExtra("PostID", postId)
+        intent.putExtra("UserID", currentUserId)
+        startActivity(intent)
     }
 }

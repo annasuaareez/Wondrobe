@@ -13,8 +13,14 @@ import com.example.wondrobe.R
 
 class ImageFollowAdapter(
     private val context: Context,
-    private val imageUrls: List<String>
+    private val imageUrls: List<String>,
+    private val postIds: List<String>,
+    private val listener: OnImageClickListener
 ) : RecyclerView.Adapter<ImageFollowAdapter.ViewHolder>() {
+
+    interface OnImageClickListener {
+        fun onImageClick(postId: String)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_image, parent, false)
@@ -23,13 +29,17 @@ class ImageFollowAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val imageUrl = imageUrls[position]
+        val postId = postIds[position]
 
         Glide.with(context)
             .load(imageUrl)
-            .transform(FitCenter(),RoundedCorners(33))
+            .transform(FitCenter(), RoundedCorners(33))
             .into(holder.imageView)
 
-        // Ajustar el tamaño de la imagen
+        holder.imageView.setOnClickListener {
+            listener.onImageClick(postId)
+        }
+
         holder.imageView.adjustViewBounds = true
         holder.imageView.scaleType = ImageView.ScaleType.FIT_XY
     }
