@@ -22,6 +22,7 @@ class DetailsPostFollow : AppCompatActivity() {
     private lateinit var userId: String
     private var isPostSaved: Boolean = false
     private lateinit var saveIcon: ImageView
+    private var imageUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,15 +57,15 @@ class DetailsPostFollow : AppCompatActivity() {
             toggleSavePost()
         }
 
-        if (postId != null) {
+        if (postId.isNotEmpty()) {
             Log.e("DetailsPost", "Post ID recibido: $postId, $userId")
             db.collection("posts").document(postId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
-                        val userId = document.getString("userId")
+                        val ownerId = document.getString("userId")
                         val title = document.getString("title")
                         val description = document.getString("description")
-                        val imageUrl = document.getString("imageUrl")
+                        imageUrl = document.getString("imageUrl")
                         val date = document.getString("date")
 
                         updateSaveIconColor()
@@ -84,21 +85,21 @@ class DetailsPostFollow : AppCompatActivity() {
                             }
                         }
 
-                        if (userId != null) {
-                            db.collection("users").document(userId).get()
+                        if (ownerId != null) {
+                            db.collection("users").document(ownerId).get()
                                 .addOnSuccessListener { userDocument ->
                                     if (userDocument != null && userDocument.exists()) {
                                         val username = userDocument.getString("username")
                                         postUsername.text = username
                                     } else {
-                                        Log.e("DetailsPost", "User document not found for userId: $userId")
+                                        Log.e("DetailsPost", "User document not found for userId: $ownerId")
                                     }
                                 }
                                 .addOnFailureListener { e ->
                                     Log.e("DetailsPost", "Error fetching user document: ${e.message}")
                                 }
                         } else {
-                            Log.e("DetailsPost", "UserId not found in post document")
+                            Log.e("DetailsPost", "OwnerId not found in post document")
                         }
 
                         if (!imageUrl.isNullOrEmpty()) {
@@ -142,73 +143,30 @@ class DetailsPostFollow : AppCompatActivity() {
         updateSaveIconColor()
 
         val db = FirebaseFirestore.getInstance()
-        val saveData = hashMapOf("saved" to isPostSaved)
+        val userSavesRef = db.collection("users").document(userId).collection("savedPosts").document(postId)
 
-        // Guardar el estado actualizado del post en la colección "posts"
-        db.collection("posts").document(postId)
-            .set(saveData, SetOptions.merge())
-            .addOnSuccessListener {
-                Log.d("DetailsPost", "Post saved state updated successfully")
-
-                // Obtener el ID de usuario del documento del post
-                db.collection("posts").document(postId).get()
-                    .addOnSuccessListener { document ->
-                        if (document != null && document.exists()) {
-                            val postOwnerId = document.getString("userId")
-                            val imageUrl = document.getString("imageUrl")
-
-                            if (postOwnerId != null && imageUrl != null) {
-                                // Si el post está guardado, agregarlo a la colección "postSave"
-                                if (isPostSaved) {
-                                    val savePostData = hashMapOf(
-                                        "postId" to postId,
-                                        "loggedInUserId" to userId,
-                                        "postOwnerId" to postOwnerId,
-                                        "imageUrl" to imageUrl
-                                    )
-
-                                    db.collection("postSave").add(savePostData)
-                                        .addOnSuccessListener {
-                                            Log.d("DetailsPost", "Post saved in the postSave collection")
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Log.e("DetailsPost", "Error saving post in the postSave collection: ${e.message}")
-                                        }
-                                } else {
-                                    // Si el post no está guardado, eliminarlo de "postSave" si existe
-                                    db.collection("postSave")
-                                        .whereEqualTo("postId", postId)
-                                        .whereEqualTo("loggedInUserId", userId)
-                                        .get()
-                                        .addOnSuccessListener { documents ->
-                                            for (document in documents) {
-                                                document.reference.delete()
-                                                    .addOnSuccessListener {
-                                                        Log.d("DetailsPost", "Post removed from the postSave collection")
-                                                    }
-                                                    .addOnFailureListener { e ->
-                                                        Log.e("DetailsPost", "Error removing post from the postSave collection: ${e.message}")
-                                                    }
-                                            }
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Log.e("DetailsPost", "Error querying the postSave collection: ${e.message}")
-                                        }
-                                }
-                            } else {
-                                Log.e("DetailsPost", "User ID not found in the post document")
-                            }
-                        } else {
-                            Log.e("DetailsPost", "Post document not found for postId: $postId")
-                        }
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("DetailsPost", "Error fetching post document: ${e.message}")
-                    }
-            }
-            .addOnFailureListener { e ->
-                Log.e("DetailsPost", "Error updating post saved state: ${e.message}")
-            }
+        if (isPostSaved) {
+            val saveData = hashMapOf(
+                "postId" to postId,
+                "imageUrl" to imageUrl,
+                "timestamp" to System.currentTimeMillis()
+            )
+            userSavesRef.set(saveData, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d("DetailsPost", "Post saved successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("DetailsPost", "Error saving post: ${e.message}")
+                }
+        } else {
+            userSavesRef.delete()
+                .addOnSuccessListener {
+                    Log.d("DetailsPost", "Post unsaved successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("DetailsPost", "Error unsaving post: ${e.message}")
+                }
+        }
     }
 
     private fun updateSaveIconColor() {
@@ -218,18 +176,15 @@ class DetailsPostFollow : AppCompatActivity() {
 
     private fun loadPostSavedStateFromDatabase() {
         val db = FirebaseFirestore.getInstance()
+        val userSavesRef = db.collection("users").document(userId).collection("savedPosts").document(postId)
 
-        db.collection("posts").document(postId).get()
+        userSavesRef.get()
             .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    isPostSaved = document.getBoolean("saved") ?: false
-                    updateSaveIconColor()
-                } else {
-                    Log.e("DetailsPost", "Post document not found for postId: $postId")
-                }
+                isPostSaved = document.exists()
+                updateSaveIconColor()
             }
             .addOnFailureListener { e ->
-                Log.e("DetailsPost", "Error fetching post document: ${e.message}")
+                Log.e("DetailsPost", "Error fetching saved state: ${e.message}")
             }
     }
 

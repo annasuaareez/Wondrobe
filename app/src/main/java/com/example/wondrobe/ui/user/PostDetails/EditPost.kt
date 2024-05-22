@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.bumptech.glide.Glide
 import com.example.wondrobe.R
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import java.text.ParseException
@@ -104,9 +105,7 @@ class EditPost : AppCompatActivity() {
                 alertDialogBuilder.setPositiveButton("Yes") { dialog, _ ->
                     dialog.dismiss()
                     // Eliminar la cuenta y los datos asociados
-                    if (userId != null) {
-                        deletePost(postId, userId)
-                    }
+                    deletePost(postId, userId)
                 }
                 alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
                     dialog.dismiss()
@@ -147,7 +146,7 @@ class EditPost : AppCompatActivity() {
             }
     }
 
-    private fun deletePost(postId: String, userId: String) {
+    private fun deletePost(postId: String, userId: String?) {
         val db = FirebaseFirestore.getInstance()
         val storage = FirebaseStorage.getInstance()
         val storageRef = storage.reference.child("/users/$userId/posts/post_$postId.jpg")
@@ -156,76 +155,81 @@ class EditPost : AppCompatActivity() {
         storageRef.delete()
             .addOnSuccessListener {
                 Log.i("EditPost", "Post image deleted from Storage successfully")
-
-                // Eliminar el post de "posts"
-                db.collection("posts").document(postId)
-                    .delete()
-                    .addOnSuccessListener {
-                        Log.i("EditPost", "Post deleted from Firestore successfully")
-
-                        // Eliminar el post de "savePost"
-                        db.collection("postSave")
-                            .whereEqualTo("postId", postId)
-                            .get()
-                            .addOnSuccessListener { documents ->
-                                for (document in documents) {
-                                    db.collection("postSave").document(document.id)
-                                        .delete()
-                                        .addOnSuccessListener {
-                                            // Lograr la eliminación con éxito
-                                            Log.i("EditPost", "Post deleted from savePost successfully")
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Log.e("EditPost", "Error deleting post from savePost: ${e.message}")
-                                        }
-                                }
-                                finish()
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("EditPost", "Error finding posts in savePost: ${e.message}")
-                            }
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("EditPost", "Error deleting post from Firestore: ${e.message}")
-                    }
+                deletePostFromFirestore(postId)
             }
             .addOnFailureListener { e ->
                 // Si el archivo no existe, continúe eliminando el post
                 if (e.message?.contains("Object does not exist") == true) {
                     Log.w("EditPost", "Post image does not exist in Storage, continuing deletion process")
-                    // Eliminar el post de "posts"
-                    db.collection("posts").document(postId)
-                        .delete()
-                        .addOnSuccessListener {
-                            Log.i("EditPost", "Post deleted from Firestore successfully")
-
-                            // Eliminar el post de "savePost"
-                            db.collection("savePost")
-                                .whereEqualTo("postId", postId)
-                                .get()
-                                .addOnSuccessListener { documents ->
-                                    for (document in documents) {
-                                        db.collection("savePost").document(document.id)
-                                            .delete()
-                                            .addOnSuccessListener {
-                                                // Lograr la eliminación con éxito
-                                                Log.i("EditPost", "Post deleted from savePost successfully")
-                                            }
-                                            .addOnFailureListener { e ->
-                                                Log.e("EditPost", "Error deleting post from savePost: ${e.message}")
-                                            }
-                                    }
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.e("EditPost", "Error finding posts in savePost: ${e.message}")
-                                }
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("EditPost", "Error deleting post from Firestore: ${e.message}")
-                        }
+                    deletePostFromFirestore(postId)
                 } else {
                     Log.e("EditPost", "Error deleting post image from Storage: ${e.message}")
+                    finish() // Error deleting image, finish the activity
                 }
+            }
+    }
+
+    private fun deletePostFromFirestore(postId: String) {
+        val db = FirebaseFirestore.getInstance()
+
+        // Eliminar el post de "posts"
+        db.collection("posts").document(postId)
+            .delete()
+            .addOnSuccessListener {
+                Log.i("EditPost", "Post deleted from Firestore successfully")
+                deletePostFromAllSavedPosts(postId)
+            }
+            .addOnFailureListener { e ->
+                Log.e("EditPost", "Error deleting post from Firestore: ${e.message}")
+                finish() // Error deleting post, finish the activity
+            }
+    }
+
+    private fun deletePostFromAllSavedPosts(postId: String) {
+        val db = FirebaseFirestore.getInstance()
+
+        // Obtener todos los usuarios
+        db.collection("users").get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val deleteTasks = mutableListOf<com.google.android.gms.tasks.Task<Void>>()
+
+                    querySnapshot.documents.forEach { userDocument ->
+                        val task = userDocument.reference.collection("savedPosts")
+                            .whereEqualTo("postId", postId)
+                            .get()
+                            .continueWithTask { task ->
+                                val savedPostsQuerySnapshot = task.result
+                                if (savedPostsQuerySnapshot != null && !savedPostsQuerySnapshot.isEmpty) {
+                                    val deleteSubTasks = savedPostsQuerySnapshot.documents.map { document ->
+                                        document.reference.delete()
+                                    }
+                                    Tasks.whenAll(deleteSubTasks)
+                                } else {
+                                    Tasks.forResult(null) // Return a successful task if there's nothing to delete
+                                }
+                            }
+                        deleteTasks.add(task)
+                    }
+
+                    // Wait for all deletions to complete
+                    Tasks.whenAll(deleteTasks)
+                        .addOnSuccessListener {
+                            Log.i("EditPost", "All references to post deleted successfully")
+                            finish() // All references deleted, finish the activity
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("EditPost", "Error deleting some references to post: ${e.message}")
+                            finish() // Even if there's an error, finish the activity
+                        }
+                } else {
+                    Log.i("EditPost", "No users found")
+                    finish() // No users found, finish the activity
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("EditPost", "Error querying users: ${e.message}")
+                finish() // Error querying users, finish the activity
             }
     }
 }

@@ -23,36 +23,38 @@
         tools:targetApi="31">
         <activity
             android:name=".ui.user.PostDetails.DetailsPostFollow"
-            android:exported="false" />
+            android:screenOrientation="portrait"
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.user.PostDetails.EditPost"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.user.PostDetails.DetailsPost"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.add.clothes.SelectClothes"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.add.clothes.AddClothes"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.add.post.AddPost"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.add.post.SelectPost"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.auth.TermsAndConditions"
@@ -61,34 +63,34 @@
             android:theme="@style/Theme.AppCompat.Dialog" />
         <activity
             android:name=".ui.user.UserFollow"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.auth.ForgotPassword"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.user.UserEdit"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:label="@string/title_activity_main"
             android:screenOrientation="portrait"
+            android:label="@string/title_activity_main"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.auth.SignUp"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.auth.LogIn"
-            android:exported="false"
             android:screenOrientation="portrait"
+            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.auth.Charge"

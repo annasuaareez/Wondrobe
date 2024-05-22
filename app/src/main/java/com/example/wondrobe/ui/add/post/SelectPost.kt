@@ -84,9 +84,7 @@ class SelectPost : AppCompatActivity() {
         }
 
         galleryIcon.setOnClickListener {
-            val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            pickPhotoIntent.type = "image/*"
-            startActivityForResult(pickPhotoIntent, REQUEST_GALLERY)
+            openGallery()
         }
 
     }
@@ -116,11 +114,29 @@ class SelectPost : AppCompatActivity() {
         } else if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK) {
             val imageUri = data?.data
             if (imageUri != null) {
-                openAddPostActivity(imageUri)
+                val absolutePath = getRealPathFromUri(imageUri)
+                if (absolutePath != null) {
+                    openAddPostActivity(Uri.parse("file://$absolutePath"))
+                } else {
+                    Toast.makeText(this, "Error al obtener la ruta absoluta de la imagen", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 Toast.makeText(this, "Error al seleccionar la imagen", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun getRealPathFromUri(uri: Uri): String? {
+        var path: String? = null
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                path = it.getString(columnIndex)
+            }
+        }
+        return path
     }
 
     private fun openAddPostActivity(imageUri: Uri) {
@@ -146,6 +162,15 @@ class SelectPost : AppCompatActivity() {
         }
     }
 
+    private fun openGallery() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), REQUEST_GALLERY)
+        } else {
+            val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(pickPhotoIntent, REQUEST_GALLERY)
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
@@ -153,6 +178,14 @@ class SelectPost : AppCompatActivity() {
                 openCamera()
             } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        if (requestCode == REQUEST_GALLERY) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGallery()
+            } else {
+                Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show()
             }
         }
     }

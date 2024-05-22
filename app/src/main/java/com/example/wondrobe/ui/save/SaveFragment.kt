@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.example.wondrobe.data.SavedPost
 import com.example.wondrobe.databinding.FragmentSaveBinding
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,10 +15,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 class SaveFragment : Fragment() {
 
     private var _binding: FragmentSaveBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-
     private lateinit var adapter: SaveAdapter
     private val db = FirebaseFirestore.getInstance()
     private val binding get() = _binding!!
@@ -28,14 +25,11 @@ class SaveFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSaveBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        return root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.saveRecyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         loadSavedPosts()
     }
@@ -43,16 +37,29 @@ class SaveFragment : Fragment() {
     private fun loadSavedPosts() {
         val userId = UserUtils.getUserId(requireContext()).toString()
         Log.e("UserID", userId)
-        db.collection("postSave")
-            .whereEqualTo("loggedInUserId", userId)
+
+        db.collection("users").document(userId).collection("savedPosts")
             .get()
             .addOnSuccessListener { documents ->
-                val posts = documents.documents
-                adapter = SaveAdapter(posts)
-                binding.saveRecyclerView.adapter = adapter
+                val savedPosts = documents.mapNotNull { document ->
+                    val postId = document.getString("postId")
+                    val imageUrl = document.getString("imageUrl")
+                    if (postId != null && imageUrl != null) {
+                        SavedPost(postId, imageUrl)
+                    } else {
+                        null
+                    }
+                }
+                if (savedPosts.isNotEmpty()) {
+                    adapter = SaveAdapter(savedPosts)
+                    binding.saveRecyclerView.adapter = adapter
+                } else {
+                    Log.d("SaveFragment", "No saved posts found")
+                    // Mostrar un mensaje indicando que no hay posts guardados
+                }
             }
             .addOnFailureListener { exception ->
-                // Handle the error
+                Log.e("SaveFragment", "Error fetching saved posts: ${exception.message}")
             }
     }
 
@@ -60,4 +67,5 @@ class SaveFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }

@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.R
 import com.example.wondrobe.adapters.ClothesAdapter
-import com.example.wondrobe.ui.add.post.SelectPost
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -63,7 +62,7 @@ class AddClothes : AppCompatActivity() {
         multiAutoComplete.setTokenizer(MultiAutoCompleteTextView.CommaTokenizer())
 
         backIcon.setOnClickListener {
-            navigateToSelectPost()
+            navigateToSelectClothes()
         }
 
         if (imageUriString.isNotEmpty()) {
@@ -71,7 +70,7 @@ class AddClothes : AppCompatActivity() {
             try {
                 imageView.setImageURI(imageUri)
             } catch (e: Exception) {
-                Log.e("AddPost", "Error setting image URI: ${e.message}")
+                Log.e("AddClothes", "Error setting image URI: ${e.message}")
                 showAlertToast("Error loading image")
             }
         }
@@ -80,7 +79,7 @@ class AddClothes : AppCompatActivity() {
             if (userId == null) {
                 Log.e("User not Authentic", "User not Authentic")
             } else {
-                Log.e("AddPost", userId)
+                Log.e("AddClothes", userId)
                 validateAndPublishClothes(userId, options)
             }
         }
@@ -142,7 +141,7 @@ class AddClothes : AppCompatActivity() {
                             .update("imageUrl", imageUrl)
                             .addOnSuccessListener {
                                 showAlertToast("Post published successfully")
-                                navigateToSelectPost()
+                                navigateToSelectClothes()
                             }
                             .addOnFailureListener { e ->
                                 showAlertToast("Error saving image URL: ${e.message}")
@@ -193,8 +192,8 @@ class AddClothes : AppCompatActivity() {
         }
     }
 
-    private fun navigateToSelectPost() {
-        val intent = Intent(this, SelectPost::class.java)
+    private fun navigateToSelectClothes() {
+        val intent = Intent(this, SelectClothes::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         finish()
