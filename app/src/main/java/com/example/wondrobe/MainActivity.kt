@@ -39,6 +39,9 @@ class MainActivity : AppCompatActivity() {
 
         binding.navView.setupWithNavController(navController)
 
+        val navViewBackgroundColor = ContextCompat.getColor(this, R.color.purple_light)
+        binding.navView.setBackgroundColor(navViewBackgroundColor)
+
         // Ocultar los títulos y mostrar solo los iconos en la barra de navegación
         binding.navView.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_UNLABELED
 

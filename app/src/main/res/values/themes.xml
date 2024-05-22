@@ -5,7 +5,7 @@
         <item name="colorPrimaryVariant">@color/purple_light</item>
         <item name="colorOnPrimary">@color/purple_light</item>
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <item name="android:background">@color/white</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
     <style name="Theme.Wondrobe" parent="Base.Theme.Wondrobe" />
