@@ -55,7 +55,7 @@ class AddClothes : AppCompatActivity() {
         imageUriString = intent.getStringExtra("imageUri") ?: ""
 
         val options = arrayOf("T-shirts", "Sweaters", "Blouses", "Jeans", "Leggings", "Pants", "Shorts", "Dress", "Jackets", "Coats",
-            "Scarves", "Hats", "Jewelry", "Belts", "Sneakers", "Boots", "Sandals")
+            "Scarves", "Hats", "Jewelry", "Handbag", "Belts", "Sneakers", "Boots", "Sandals")
 
         val adapter = ClothesAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, options)
         multiAutoComplete.setAdapter(adapter)

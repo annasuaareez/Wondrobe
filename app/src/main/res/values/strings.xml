@@ -64,4 +64,6 @@
     <string name="upload_clothes">Upload clothes to see here</string>
     <string name="clothes_option">Clothes Option</string>
     <string name="no_photos_in_the_gallery">No photos in the gallery</string>
+    <string name="wardrobe">Wardrobe</string>
+    <string name="outfits">Outfits</string>
 </resources>
