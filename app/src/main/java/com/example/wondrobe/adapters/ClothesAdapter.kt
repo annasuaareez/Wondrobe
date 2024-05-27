@@ -8,7 +8,7 @@ class ClothesAdapter<T>(context: Context, resource: Int, objects: Array<T>) :
     ArrayAdapter<T>(context, resource, objects) {
 
     override fun getItemId(position: Int): Long {
-        return position.toLong() // Aquí puedes personalizar cómo se obtiene el ID de cada elemento
+        return position.toLong()
     }
 
     override fun getItem(position: Int): T? {

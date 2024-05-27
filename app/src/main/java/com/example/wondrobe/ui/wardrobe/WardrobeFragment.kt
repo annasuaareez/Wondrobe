@@ -1,15 +1,19 @@
 package com.example.wondrobe.ui.wardrobe
 
+import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.wondrobe.adapters.ClothesOptionsAdapter
+import com.example.wondrobe.R
+import com.example.wondrobe.adapters.ClothesCategoryAdapter
 import com.example.wondrobe.data.Clothes
+import com.example.wondrobe.data.ClothesCategory
 import com.example.wondrobe.databinding.FragmentWardrobeBinding
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,8 +24,8 @@ class WardrobeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var userId: String
-    private lateinit var clothesAdapter: ClothesOptionsAdapter
-    private val clothesList = mutableListOf<Clothes>()
+    private lateinit var categoryAdapter: ClothesCategoryAdapter
+    private val categories = mutableListOf<ClothesCategory>()
     private var selectedType: String? = null
 
     override fun onCreateView(
@@ -34,9 +38,24 @@ class WardrobeFragment : Fragment() {
 
         userId = UserUtils.getUserId(requireContext()).toString()
 
+        val clothesButton = binding.clothesButton
+        val outfitButton = binding.outfitsButton
+        val clothesIndicator = binding.clothesIndicator
+        val outfitIndicator = binding.outfitIndicator
+
         setupRecyclerView()
         setupSpinner()
         loadClothes()
+
+        clothesButton.setOnClickListener {
+            animateIndicatorChange(clothesIndicator, outfitIndicator)
+            showClothesContent()
+        }
+
+        outfitButton.setOnClickListener {
+            animateIndicatorChange(outfitIndicator, clothesIndicator)
+            showOutfitContent()
+        }
 
         return root
     }
@@ -47,10 +66,13 @@ class WardrobeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        clothesAdapter = ClothesOptionsAdapter(clothesList)
+        categoryAdapter = ClothesCategoryAdapter(categories) { category ->
+            // Handle category click, e.g., show clothes of that category
+            //showClothesOfCategory(category)
+        }
         binding.recyclerViewClothes.apply {
             layoutManager = GridLayoutManager(context, 2)
-            adapter = clothesAdapter
+            adapter = categoryAdapter
         }
     }
 
@@ -62,9 +84,9 @@ class WardrobeFragment : Fragment() {
 
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, options)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerFilterClothes.adapter = adapter
+        //binding.spinnerFilterClothes.adapter = adapter
 
-        binding.spinnerFilterClothes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        /*binding.spinnerFilterClothes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 selectedType = if (position == 0) null else options[position]
                 loadClothes()
@@ -74,7 +96,44 @@ class WardrobeFragment : Fragment() {
                 selectedType = null
                 loadClothes()
             }
+        }*/
+    }
+
+    private fun animateIndicatorChange(showIndicator: View, hideIndicator: View) {
+        val hideAnimator = ObjectAnimator.ofFloat(hideIndicator, "alpha", 1f, 0f)
+        hideAnimator.duration = 250 // Duration of the animation in milliseconds
+        hideAnimator.interpolator = AccelerateDecelerateInterpolator()
+
+        val showAnimator = ObjectAnimator.ofFloat(showIndicator, "alpha", 0f, 1f)
+        showAnimator.duration = 250 // Duration of the animation in milliseconds
+        showAnimator.interpolator = AccelerateDecelerateInterpolator()
+
+        hideAnimator.addUpdateListener {
+            if (hideIndicator.alpha == 0f) {
+                hideIndicator.visibility = View.INVISIBLE
+            }
         }
+
+        showAnimator.addUpdateListener {
+            if (showIndicator.alpha == 1f) {
+                showIndicator.visibility = View.VISIBLE
+            }
+        }
+
+        hideAnimator.start()
+        showAnimator.start()
+    }
+
+    private fun showClothesContent() {
+        //binding.spinnerFilterClothes.visibility = View.VISIBLE
+        binding.recyclerViewClothes.visibility = if (categories.isEmpty()) View.GONE else View.VISIBLE
+        binding.textNoClothes.visibility = if (categories.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    private fun showOutfitContent() {
+        //binding.spinnerFilterClothes.visibility = View.GONE
+        binding.recyclerViewClothes.visibility = View.GONE
+        binding.textNoClothes.visibility = View.VISIBLE
     }
 
     private fun loadClothes() {
@@ -102,14 +161,25 @@ class WardrobeFragment : Fragment() {
             binding.textNoClothes.visibility = View.VISIBLE
             binding.recyclerViewClothes.visibility = View.GONE
         } else {
-            clothesList.clear()
-            for (document in result) {
-                val clothes = document.toObject(Clothes::class.java)
-                clothesList.add(clothes)
+            val groupedClothes = result.documents.map { it.toObject(Clothes::class.java)!! }
+                .groupBy { it.typeClothes }
+
+            categories.clear()
+            categories.add(ClothesCategory("All", groupedClothes.flatMap { it.value }))
+            groupedClothes.forEach { (type, clothes) ->
+                categories.add(ClothesCategory(type ?: "Unknown", clothes))
             }
-            clothesAdapter.notifyDataSetChanged()
+            categoryAdapter.notifyDataSetChanged()
             binding.textNoClothes.visibility = View.GONE
             binding.recyclerViewClothes.visibility = View.VISIBLE
         }
     }
+
+    /*private fun showClothesOfCategory(category: ClothesCategory) {
+        val intent = Intent(requireContext(), WardrobeItems::class.java)
+        intent.putExtra("categoryName", category.categoryName)
+        startActivity(intent)
+        activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+    }*/
+
 }
