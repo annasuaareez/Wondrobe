@@ -15,6 +15,7 @@ import com.example.wondrobe.adapters.ClothesCategoryAdapter
 import com.example.wondrobe.data.Clothes
 import com.example.wondrobe.data.ClothesCategory
 import com.example.wondrobe.databinding.FragmentWardrobeBinding
+import com.example.wondrobe.ui.wardrobe.details.CategoryDetails
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
@@ -67,8 +68,7 @@ class WardrobeFragment : Fragment() {
 
     private fun setupRecyclerView() {
         categoryAdapter = ClothesCategoryAdapter(categories) { category ->
-            // Handle category click, e.g., show clothes of that category
-            //showClothesOfCategory(category)
+            showClothesOfCategory(category)
         }
         binding.recyclerViewClothes.apply {
             layoutManager = GridLayoutManager(context, 2)
@@ -175,11 +175,13 @@ class WardrobeFragment : Fragment() {
         }
     }
 
-    /*private fun showClothesOfCategory(category: ClothesCategory) {
-        val intent = Intent(requireContext(), WardrobeItems::class.java)
-        intent.putExtra("categoryName", category.categoryName)
+    private fun showClothesOfCategory(category: ClothesCategory) {
+        val intent = Intent(requireContext(), CategoryDetails::class.java).apply {
+            putExtra("categoryName", category.categoryName)
+            putParcelableArrayListExtra("clothesList", ArrayList(category.clothesList))
+        }
         startActivity(intent)
         activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-    }*/
+    }
 
 }

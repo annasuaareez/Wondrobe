@@ -66,4 +66,5 @@
     <string name="no_photos_in_the_gallery">No photos in the gallery</string>
     <string name="wardrobe">Wardrobe</string>
     <string name="outfits">Outfits</string>
+    <string name="delete_clothes">Delete Clothes</string>
 </resources>

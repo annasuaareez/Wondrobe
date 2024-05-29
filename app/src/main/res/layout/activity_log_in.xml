@@ -33,15 +33,15 @@
         <!-- TextView "Username" -->
         <TextView
             android:id="@+id/usernameLabel"
+            style="@style/TextView.DarkTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/username"
-            style="@style/TextView.DarkTheme"
-            android:fontFamily="@font/kollektif"
-            android:textSize="20sp"
             android:layout_gravity="left"
+            android:layout_marginStart="2dp"
             android:layout_marginBottom="5dp"
-            android:layout_marginStart="2dp"/>
+            android:fontFamily="@font/kollektif"
+            android:text="@string/username"
+            android:textSize="20sp" />
 
         <!-- EditText "Username" -->
         <EditText

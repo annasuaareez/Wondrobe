@@ -43,4 +43,3 @@ class ClothesCategoryAdapter(
 
     override fun getItemCount() = categories.size
 }
-

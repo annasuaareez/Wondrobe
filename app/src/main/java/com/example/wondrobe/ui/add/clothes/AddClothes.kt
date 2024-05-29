@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.MultiAutoCompleteTextView
@@ -17,7 +18,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.R
-import com.example.wondrobe.adapters.ClothesAdapter
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -57,7 +57,8 @@ class AddClothes : AppCompatActivity() {
         val options = arrayOf("T-shirts", "Sweaters", "Blouses", "Jeans", "Leggings", "Pants", "Shorts", "Dress", "Jackets", "Coats",
             "Scarves", "Hats", "Jewelry", "Handbag", "Belts", "Sneakers", "Boots", "Sandals")
 
-        val adapter = ClothesAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, options)
+        // Usar ArrayAdapter en lugar de ClothesAdapter
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, options)
         multiAutoComplete.setAdapter(adapter)
         multiAutoComplete.setTokenizer(MultiAutoCompleteTextView.CommaTokenizer())
 
