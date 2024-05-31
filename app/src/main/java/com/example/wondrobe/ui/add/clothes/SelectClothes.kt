@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.net.Uri
@@ -30,9 +31,9 @@ import java.io.ByteArrayOutputStream
 
 class SelectClothes : AppCompatActivity() {
     companion object {
-        private const val NUM_COLUMNS = 4
-        private const val MAX_IMAGE_COUNT = 60
-        private const val IMAGE_LOAD_ERROR = "Error loading images"
+        const val NUM_COLUMNS = 4
+        const val MAX_IMAGE_COUNT = 60
+        const val IMAGE_LOAD_ERROR = "Error loading images"
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_GALLERY = 123
         private const val REQUEST_CAMERA_PERMISSION = 100
@@ -206,7 +207,7 @@ class SelectClothes : AppCompatActivity() {
         private val contentResolver: ContentResolver,
         private val imageGrid: GridLayout,
         private val loadingProgressBar: ProgressBar
-    ) : AsyncTask<Void, Void, List<Uri>>() {
+    ) : AsyncTask<Void, Void, List<Bitmap>>() {
 
         @Deprecated("Deprecated in Java")
         override fun onPreExecute() {
@@ -216,17 +217,21 @@ class SelectClothes : AppCompatActivity() {
 
         @Deprecated("Deprecated in Java")
         @SuppressLint("Range")
-        override fun doInBackground(vararg params: Void?): List<Uri> {
-            val images = mutableListOf<Uri>()
+        override fun doInBackground(vararg params: Void?): List<Bitmap> {
+            val images = mutableListOf<Bitmap>()
             val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            val projection = arrayOf(MediaStore.Images.Media.DATA)
+            val projection = arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA)
             val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
             val cursor = contentResolver.query(uri, projection, null, null, sortOrder)
 
             cursor?.use {
                 while (it.moveToNext() && images.size < MAX_IMAGE_COUNT) {
-                    val imageUri: Uri = Uri.parse(it.getString(it.getColumnIndex(MediaStore.Images.Media.DATA)))
-                    images.add(imageUri)
+                    val imageId = it.getLong(it.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
+                    val imageUri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageId.toString())
+                    val bitmap = decodeSampledBitmapFromUri(imageUri, 200, 200)
+                    if (bitmap != null) {
+                        images.add(bitmap)
+                    }
                 }
             }
 
@@ -234,7 +239,7 @@ class SelectClothes : AppCompatActivity() {
         }
 
         @Deprecated("Deprecated in Java")
-        override fun onPostExecute(result: List<Uri>?) {
+        override fun onPostExecute(result: List<Bitmap>?) {
             super.onPostExecute(result)
             loadingProgressBar.visibility = View.GONE
             result?.let {
@@ -243,7 +248,44 @@ class SelectClothes : AppCompatActivity() {
         }
     }
 
-    private fun setupGridLayout(imageGrid: GridLayout, images: List<Uri>) {
+    private fun decodeSampledBitmapFromUri(uri: Uri, reqWidth: Int, reqHeight: Int): Bitmap? {
+        return try {
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            contentResolver.openInputStream(uri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+            options.inJustDecodeBounds = false
+
+            contentResolver.openInputStream(uri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
+    }
+
+    private fun setupGridLayout(imageGrid: GridLayout, images: List<Bitmap>) {
         imageGrid.apply {
             rowCount = (images.size + NUM_COLUMNS - 1) / NUM_COLUMNS
             removeAllViews()
@@ -253,9 +295,9 @@ class SelectClothes : AppCompatActivity() {
         val imageHeight = resources.getDimensionPixelSize(R.dimen.image_height)
         val margin = resources.getDimensionPixelSize(R.dimen.image_margin)
 
-        images.forEachIndexed { index, uri ->
+        images.forEachIndexed { index, bitmap ->
             val imageView = ImageView(this)
-            imageView.setImageURI(uri)
+            imageView.setImageBitmap(bitmap)
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
             imageView.layoutParams = GridLayout.LayoutParams(
                 GridLayout.spec(index / NUM_COLUMNS, 1f),
@@ -267,30 +309,21 @@ class SelectClothes : AppCompatActivity() {
             }
 
             imageView.setOnClickListener {
-                handleImageClick(uri, imageView)
+                handleImageClick(bitmap, imageView)
             }
 
             imageGrid.addView(imageView)
         }
     }
 
-    private fun handleImageClick(uri: Uri, imageView: ImageView) {
-        if (selectedImageUri == uri) {
-            selectedImageUri = null
-            resetImageGrid(imageGrid)
-            findViewById<AppCompatButton>(R.id.nextButton).isEnabled = false
-            findViewById<AppCompatButton>(R.id.nextButton).setBackgroundResource(R.drawable.button_gray)
-        } else {
-            selectedImageUri = uri
-            resetImageGrid(imageGrid)
-            applyGrayScaleToOthers(imageGrid, imageView)
-            imageView.isClickable = true
-            findViewById<AppCompatButton>(R.id.nextButtonClothes).isEnabled = true
-            findViewById<AppCompatButton>(R.id.nextButtonClothes).setBackgroundResource(R.drawable.button_purple)
-        }
-
+    private fun handleImageClick(bitmap: Bitmap, imageView: ImageView) {
+        selectedImageUri = getImageUri(bitmap)
+        resetImageGrid(imageGrid)
+        applyGrayScaleToOthers(imageGrid, imageView)
+        imageView.isClickable = true
+        findViewById<AppCompatButton>(R.id.nextButtonClothes).isEnabled = true
+        findViewById<AppCompatButton>(R.id.nextButtonClothes).setBackgroundResource(R.drawable.button_purple)
     }
-
     private fun resetImageGrid(imageGrid: GridLayout) {
         imageGrid.children.forEach { child ->
             if (child is ImageView) {

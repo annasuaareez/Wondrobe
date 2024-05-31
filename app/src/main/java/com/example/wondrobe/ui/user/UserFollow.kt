@@ -29,6 +29,8 @@ import com.google.firebase.firestore.Query
 
 class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener {
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var followButton: Button
+    private lateinit var followersTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,12 +56,13 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
         val firstNameTextView = findViewById<TextView>(R.id.firstName)
         val biographyTextView = findViewById<TextView>(R.id.biography)
         val bannerImageView = findViewById<ImageView>(R.id.banner)
-        val followersTextView = findViewById<TextView>(R.id.followersCount)
         val followingTextView = findViewById<TextView>(R.id.followingCount)
         val arrowIcon = findViewById<ImageView>(R.id.arrowIcon)
-        val followButton = findViewById<Button>(R.id.followButton)
         val followingLayout = findViewById<LinearLayout>(R.id.followingLayoutUser)
         val followersLayout = findViewById<LinearLayout>(R.id.followersLayoutUser)
+
+        followButton = findViewById(R.id.followButton)
+        followersTextView = findViewById(R.id.followersCount)
 
         selectedUser?.let { user ->
             usernameTextView.text = user.username
@@ -93,18 +96,7 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
             updateFollowButton(followButton, user.isFollowing)
 
             followButton.setOnClickListener {
-                user.isFollowing = !user.isFollowing
-                SharedPreferencesManager.saveFollowingState(this, user.uid, user.isFollowing)
-
-                updateFollowButton(followButton, user.isFollowing)
-
-                if (user.isFollowing) {
-                    updateFollowersCount(user, followersTextView, increment = true)
-                    currentUserId?.let { updateFollowingCount(it, increment = true) }
-                } else {
-                    updateFollowersCount(user, followersTextView, increment = false)
-                    currentUserId?.let { updateFollowingCount(it, increment = false) }
-                }
+                toggleFollowUser(user)
             }
 
             if (user.biography.isNullOrEmpty()) {
@@ -168,6 +160,59 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
         }
     }
 
+    private fun toggleFollowUser(selectedUser: User) {
+        selectedUser.isFollowing = !selectedUser.isFollowing
+        updateFollowButton(followButton, selectedUser.isFollowing)
+
+        val db = FirebaseFirestore.getInstance()
+        val currentUserId = UserUtils.getUserId(this)
+        val userFollowsRef = db.collection("users").document(selectedUser.uid!!)
+            .collection("userFollowers").document(currentUserId!!)
+
+        if (selectedUser.isFollowing) {
+            val followerData = hashMapOf(
+                "followerId" to currentUserId
+            )
+            userFollowsRef.set(followerData)
+                .addOnSuccessListener {
+                    Log.d("UserFollow", "User followed successfully")
+                    updateFollowersCount(selectedUser, followersTextView, true, currentUserId)
+                    currentUserId?.let { updateFollowingCount(it, true) }
+
+                    saveFollowingState(currentUserId, selectedUser.uid!!)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UserFollow", "Error following user: ${e.message}")
+                }
+        } else {
+            userFollowsRef.delete()
+                .addOnSuccessListener {
+                    Log.d("UserFollow", "User unfollowed successfully")
+                    updateFollowersCount(selectedUser, followersTextView, false, currentUserId)
+                    currentUserId?.let { updateFollowingCount(it, false) }
+
+                    removeFollowingState(currentUserId, selectedUser.uid!!)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UserFollow", "Error unfollowing user: ${e.message}")
+                }
+        }
+    }
+
+    private fun saveFollowingState(userId: String, followedUserId: String) {
+        // Guardar en la base de datos del usuario actual que está siguiendo a followedUserId
+        val db = FirebaseFirestore.getInstance()
+        val followingRef = db.collection("users").document(userId)
+
+        followingRef.update("following.$followedUserId", true)
+            .addOnSuccessListener {
+                Log.d("UserFollow", "Following state saved successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("UserFollow", "Error saving following state: ${e.message}")
+            }
+    }
+
     private fun updateFollowButton(button: Button, isFollowing: Boolean) {
         if (isFollowing) {
             button.text = "Following"
@@ -180,7 +225,21 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
         }
     }
 
-    private fun updateFollowersCount(user: User, textView: TextView, increment: Boolean) {
+    private fun removeFollowingState(userId: String, followedUserId: String) {
+        // Eliminar la información de seguimiento del usuario actual
+        val db = FirebaseFirestore.getInstance()
+        val followingRef = db.collection("users").document(userId)
+
+        followingRef.update("following.$followedUserId", false)
+            .addOnSuccessListener {
+                Log.d("UserFollow", "Following state removed successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("UserFollow", "Error removing following state: ${e.message}")
+            }
+    }
+
+    private fun updateFollowersCount(user: User, textView: TextView, increment: Boolean, currentUserId: String?) {
         val userId = user.uid ?: return
 
         firestore.runTransaction { transaction ->
@@ -194,6 +253,33 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
             SharedPreferencesManager.saveFollowersCount(this, user.uid, newFollowersCount.toInt())
             textView.text = newFollowersCount.toString()
             Log.d("Firestore", "Followers count updated successfully")
+
+            val currentUsername = UserUtils.getUsername(this)
+            if (increment) {
+                val followerData = hashMapOf(
+                    "followerId" to currentUserId,
+                    "followerUsername" to currentUsername
+                )
+                firestore.collection("followers").document(userId)
+                    .collection("userFollowers")
+                    .document(currentUserId!!)
+                    .set(followerData)
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Follower added successfully")
+                    }.addOnFailureListener { e ->
+                        Log.e("Firestore", "Error adding follower", e)
+                    }
+            } else {
+                firestore.collection("followers").document(userId)
+                    .collection("userFollowers")
+                    .document(currentUserId!!)
+                    .delete()
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Follower removed successfully")
+                    }.addOnFailureListener { e ->
+                        Log.e("Firestore", "Error removing follower", e)
+                    }
+            }
         }.addOnFailureListener { e ->
             Log.e("Firestore", "Error updating followers count", e)
         }
