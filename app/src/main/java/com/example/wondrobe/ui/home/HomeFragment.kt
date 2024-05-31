@@ -13,6 +13,9 @@ import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.wondrobe.R
 import com.example.wondrobe.adapters.UserAdapter
 import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
@@ -33,6 +36,7 @@ class HomeFragment : Fragment() {
     private lateinit var listView: ListView
     private lateinit var blackOverlay: View
     private lateinit var optionsLayout: LinearLayout
+    private lateinit var recyclerViewFollowingUsers: RecyclerView
 
     companion object {
         private const val REQUEST_USER_FOLLOW = 1001
@@ -59,6 +63,8 @@ class HomeFragment : Fragment() {
         listView = binding.listUsers
         blackOverlay = binding.blackOverlay
         optionsLayout = binding.optionsLayout
+        recyclerViewFollowingUsers = binding.recyclerViewFollowingUsers
+        recyclerViewFollowingUsers.layoutManager = LinearLayoutManager(requireContext())
 
         val forYouButton = binding.forYouButton
         val followingButton = binding.followingButton
@@ -108,10 +114,13 @@ class HomeFragment : Fragment() {
 
         forYouButton.setOnClickListener {
             animateIndicatorChange(forYouIndicator, followingIndicator)
+            recyclerViewFollowingUsers.visibility = View.GONE
         }
 
         followingButton.setOnClickListener {
             animateIndicatorChange(followingIndicator, forYouIndicator)
+            loadFollowingUsers()
+            recyclerViewFollowingUsers.visibility = View.VISIBLE
         }
 
         return root
@@ -216,6 +225,11 @@ class HomeFragment : Fragment() {
 
         hideAnimator.start()
         showAnimator.start()
+    }
+
+    private fun loadFollowingUsers() {
+        // Aquí cargarías y configurarías el adaptador para el RecyclerView
+        // utilizando los datos de la colección "userFollowers"
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
