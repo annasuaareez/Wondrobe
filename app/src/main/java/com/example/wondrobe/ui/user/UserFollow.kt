@@ -89,9 +89,11 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
                 bannerImageView.setColorFilter(ContextCompat.getColor(this, R.color.light_blue_gray))
             }
 
-            val isFollowing = SharedPreferencesManager.getFollowingState(this, user.uid)
+            val isFollowing = user.uid?.let { SharedPreferencesManager.getFollowingState(this, it) }
 
-            user.isFollowing = isFollowing
+            if (isFollowing != null) {
+                user.isFollowing = isFollowing
+            }
 
             updateFollowButton(followButton, user.isFollowing)
 
@@ -161,25 +163,26 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
     }
 
     private fun toggleFollowUser(selectedUser: User) {
-        selectedUser.isFollowing = !selectedUser.isFollowing
-        updateFollowButton(followButton, selectedUser.isFollowing)
+        val userId = selectedUser.uid ?: return
+        val currentUserId = UserUtils.getUserId(this) ?: return
+
+        val isFollowing = !SharedPreferencesManager.getFollowingState(this, userId)
+        SharedPreferencesManager.saveFollowingState(this, userId, isFollowing)
+
+        selectedUser.isFollowing = isFollowing
+        updateFollowButton(followButton, isFollowing)
 
         val db = FirebaseFirestore.getInstance()
-        val currentUserId = UserUtils.getUserId(this)
-        val userFollowsRef = db.collection("users").document(selectedUser.uid!!)
-            .collection("userFollowers").document(currentUserId!!)
+        val userFollowsRef = db.collection("users").document(userId)
+            .collection("userFollowers").document(currentUserId)
 
-        if (selectedUser.isFollowing) {
-            val followerData = hashMapOf(
-                "followerId" to currentUserId
-            )
+        if (isFollowing) {
+            val followerData = hashMapOf("followerId" to currentUserId)
             userFollowsRef.set(followerData)
                 .addOnSuccessListener {
                     Log.d("UserFollow", "User followed successfully")
                     updateFollowersCount(selectedUser, followersTextView, true, currentUserId)
-                    currentUserId?.let { updateFollowingCount(it, true) }
-
-                    saveFollowingState(currentUserId, selectedUser.uid!!)
+                    updateFollowingCount(currentUserId, true)
                 }
                 .addOnFailureListener { e ->
                     Log.e("UserFollow", "Error following user: ${e.message}")
@@ -189,13 +192,23 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
                 .addOnSuccessListener {
                     Log.d("UserFollow", "User unfollowed successfully")
                     updateFollowersCount(selectedUser, followersTextView, false, currentUserId)
-                    currentUserId?.let { updateFollowingCount(it, false) }
-
-                    removeFollowingState(currentUserId, selectedUser.uid!!)
+                    updateFollowingCount(currentUserId, false)
                 }
                 .addOnFailureListener { e ->
                     Log.e("UserFollow", "Error unfollowing user: ${e.message}")
                 }
+        }
+    }
+
+    private fun updateFollowButton(button: Button, isFollowing: Boolean) {
+        if (isFollowing) {
+            button.text = "Following"
+            button.setBackgroundResource(R.drawable.button_purple)
+            button.setTextColor(Color.WHITE)
+        } else {
+            button.text = "Follow"
+            button.setBackgroundResource(R.drawable.button_white)
+            button.setTextColor(Color.BLACK)
         }
     }
 
@@ -211,18 +224,6 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
             .addOnFailureListener { e ->
                 Log.e("UserFollow", "Error saving following state: ${e.message}")
             }
-    }
-
-    private fun updateFollowButton(button: Button, isFollowing: Boolean) {
-        if (isFollowing) {
-            button.text = "Following"
-            button.setBackgroundResource(R.drawable.button_purple)
-            button.setTextColor(Color.WHITE)
-        } else {
-            button.text = "Follow"
-            button.setBackgroundResource(R.drawable.button_white)
-            button.setTextColor(Color.BLACK)
-        }
     }
 
     private fun removeFollowingState(userId: String, followedUserId: String) {

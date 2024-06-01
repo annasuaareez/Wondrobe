@@ -67,4 +67,5 @@
     <string name="wardrobe">Wardrobe</string>
     <string name="outfits">Outfits</string>
     <string name="delete_clothes">Delete Clothes</string>
+    <string name="no_posts">No posts</string>
 </resources>

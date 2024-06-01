@@ -16,13 +16,16 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wondrobe.R
+import com.example.wondrobe.adapters.PostsAdapter
 import com.example.wondrobe.adapters.UserAdapter
+import com.example.wondrobe.data.Post
 import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
 import com.example.wondrobe.ui.user.UserFollow
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class HomeFragment : Fragment() {
 
@@ -228,9 +231,57 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadFollowingUsers() {
-        // Aquí cargarías y configurarías el adaptador para el RecyclerView
-        // utilizando los datos de la colección "userFollowers"
+        val currentUserUid = auth.currentUser?.uid ?: return
+
+        db.collection("userFollowers").document(currentUserUid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val followingIds = document.get("following") as? List<String> ?: emptyList()
+
+                    if (followingIds.isNotEmpty()) {
+                        val posts = mutableListOf<Post>()
+                        followingIds.forEach { userId ->
+                            db.collection("posts")
+                                .whereEqualTo("userId", userId)
+                                .orderBy("date", Query.Direction.DESCENDING)
+                                .get()
+                                .addOnSuccessListener { documents ->
+                                    for (doc in documents) {
+                                        val post = doc.toObject(Post::class.java)
+                                        posts.add(post)
+                                    }
+                                    if (posts.isEmpty()) {
+                                        showNoPostsMessage("No posts uploaded")
+                                    } else {
+                                        posts.sortByDescending { it.date }
+                                        recyclerViewFollowingUsers.adapter = PostsAdapter(posts)
+                                        recyclerViewFollowingUsers.visibility = View.VISIBLE
+                                    }
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.e("HomeFragment", "Error fetching posts", exception)
+                                }
+                        }
+                    } else {
+                        showNoPostsMessage("Start following someone")
+                    }
+                } else {
+                    showNoPostsMessage("Start following someone")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("HomeFragment", "Error fetching following users", exception)
+            }
     }
+
+    private fun showNoPostsMessage(message: String) {
+        val noPostsView = binding.noPostsMessage
+        noPostsView.text = message
+        noPostsView.visibility = View.VISIBLE
+        recyclerViewFollowingUsers.visibility = View.GONE
+    }
+
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
