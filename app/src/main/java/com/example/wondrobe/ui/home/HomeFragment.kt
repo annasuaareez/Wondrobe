@@ -26,6 +26,7 @@ import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import java.util.Date
 
 class HomeFragment : Fragment() {
 
@@ -38,8 +39,9 @@ class HomeFragment : Fragment() {
     private lateinit var searchView: SearchView
     private lateinit var listView: ListView
     private lateinit var blackOverlay: View
-    private lateinit var optionsLayout: LinearLayout
     private lateinit var recyclerViewFollowingUsers: RecyclerView
+    private lateinit var postsAdapter: PostsAdapter
+    private lateinit var recyclerView: RecyclerView
 
     companion object {
         private const val REQUEST_USER_FOLLOW = 1001
@@ -65,28 +67,18 @@ class HomeFragment : Fragment() {
         searchView = binding.searchView
         listView = binding.listUsers
         blackOverlay = binding.blackOverlay
-        optionsLayout = binding.optionsLayout
-        recyclerViewFollowingUsers = binding.recyclerViewFollowingUsers
-        recyclerViewFollowingUsers.layoutManager = LinearLayoutManager(requireContext())
-
-        val forYouButton = binding.forYouButton
-        val followingButton = binding.followingButton
-        val forYouIndicator = binding.forYouIndicator
-        val followingIndicator = binding.followingIndicator
 
         listView.visibility = View.GONE  // Ocultar el ListView inicialmente
 
         searchView.setOnSearchClickListener {
             blackOverlay.visibility = View.VISIBLE
             listView.visibility = View.VISIBLE  // Mostrar el ListView cuando la búsqueda está activa
-            optionsLayout.elevation = 4f // Reducir la elevación cuando la búsqueda está activa
         }
 
         searchView.setOnCloseListener {
             blackOverlay.visibility = View.GONE
             listView.visibility = View.GONE  // Ocultar el ListView cuando la búsqueda no está activa
             updateListView(emptyList(), listView)
-            optionsLayout.elevation = 12f // Restaurar la elevación cuando la búsqueda no está activa
             false
         }
 
@@ -115,17 +107,6 @@ class HomeFragment : Fragment() {
             }
         })
 
-        forYouButton.setOnClickListener {
-            animateIndicatorChange(forYouIndicator, followingIndicator)
-            recyclerViewFollowingUsers.visibility = View.GONE
-        }
-
-        followingButton.setOnClickListener {
-            animateIndicatorChange(followingIndicator, forYouIndicator)
-            loadFollowingUsers()
-            recyclerViewFollowingUsers.visibility = View.VISIBLE
-        }
-
         return root
     }
 
@@ -138,7 +119,6 @@ class HomeFragment : Fragment() {
             blackOverlay.visibility = View.GONE
             listView.visibility = View.GONE
             updateListView(emptyList(), listView)
-            optionsLayout.elevation = 12f // Restaurar la elevación cuando la búsqueda no está activa
         }
     }
 
@@ -189,10 +169,8 @@ class HomeFragment : Fragment() {
 
         if (usersList.isEmpty()) {
             listView.visibility = View.GONE
-            optionsLayout.elevation = 12f // Aumentar la elevación cuando el ListView está vacío
         } else {
             listView.visibility = View.VISIBLE
-            optionsLayout.elevation = 4f // Reducir la elevación cuando el ListView tiene elementos
         }
 
         listView.setOnItemClickListener { parent, view, position, id ->
@@ -204,84 +182,6 @@ class HomeFragment : Fragment() {
             startActivityForResult(intent, REQUEST_USER_FOLLOW)
         }
     }
-
-    private fun animateIndicatorChange(showIndicator: View, hideIndicator: View) {
-        val hideAnimator = ObjectAnimator.ofFloat(hideIndicator, "alpha", 1f, 0f)
-        hideAnimator.duration = 250 // Duration of the animation in milliseconds
-        hideAnimator.interpolator = AccelerateDecelerateInterpolator()
-
-        val showAnimator = ObjectAnimator.ofFloat(showIndicator, "alpha", 0f, 1f)
-        showAnimator.duration = 250 // Duration of the animation in milliseconds
-        showAnimator.interpolator = AccelerateDecelerateInterpolator()
-
-        hideAnimator.addUpdateListener {
-            if (hideIndicator.alpha == 0f) {
-                hideIndicator.visibility = View.INVISIBLE
-            }
-        }
-
-        showAnimator.addUpdateListener {
-            if (showIndicator.alpha == 1f) {
-                showIndicator.visibility = View.VISIBLE
-            }
-        }
-
-        hideAnimator.start()
-        showAnimator.start()
-    }
-
-    private fun loadFollowingUsers() {
-        val currentUserUid = auth.currentUser?.uid ?: return
-
-        db.collection("userFollowers").document(currentUserUid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val followingIds = document.get("following") as? List<String> ?: emptyList()
-
-                    if (followingIds.isNotEmpty()) {
-                        val posts = mutableListOf<Post>()
-                        followingIds.forEach { userId ->
-                            db.collection("posts")
-                                .whereEqualTo("userId", userId)
-                                .orderBy("date", Query.Direction.DESCENDING)
-                                .get()
-                                .addOnSuccessListener { documents ->
-                                    for (doc in documents) {
-                                        val post = doc.toObject(Post::class.java)
-                                        posts.add(post)
-                                    }
-                                    if (posts.isEmpty()) {
-                                        showNoPostsMessage("No posts uploaded")
-                                    } else {
-                                        posts.sortByDescending { it.date }
-                                        recyclerViewFollowingUsers.adapter = PostsAdapter(posts)
-                                        recyclerViewFollowingUsers.visibility = View.VISIBLE
-                                    }
-                                }
-                                .addOnFailureListener { exception ->
-                                    Log.e("HomeFragment", "Error fetching posts", exception)
-                                }
-                        }
-                    } else {
-                        showNoPostsMessage("Start following someone")
-                    }
-                } else {
-                    showNoPostsMessage("Start following someone")
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.e("HomeFragment", "Error fetching following users", exception)
-            }
-    }
-
-    private fun showNoPostsMessage(message: String) {
-        val noPostsView = binding.noPostsMessage
-        noPostsView.text = message
-        noPostsView.visibility = View.VISIBLE
-        recyclerViewFollowingUsers.visibility = View.GONE
-    }
-
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

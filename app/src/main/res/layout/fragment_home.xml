@@ -36,21 +36,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/searchView" />
 
-    <!-- RecyclerView para mostrar usuarios seguidos -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewFollowingUsers"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
-
     <TextView
         android:id="@+id/noPostsMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/no_posts"
         android:visibility="gone"
-        android:layout_gravity="center" />
-
+        android:layout_gravity="center_horizontal|center_vertical"
+        tools:ignore="MissingConstraints" />
 
     <!--android:background="@drawable/listview_background"-->
     <ListView
@@ -62,71 +55,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/searchView"/>
-
-    <LinearLayout
-        android:id="@+id/optionsLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        android:elevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchView">
-
-        <LinearLayout
-            android:id="@+id/forYouLayout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/forYouButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/for_you"
-                style="@style/TextView.DarkTheme"
-                android:fontFamily="@font/kollektif"
-                android:textSize="18sp"
-                android:background="@drawable/button_transparent" />
-
-            <View
-                android:id="@+id/forYouIndicator"
-                android:layout_width="match_parent"
-                android:layout_height="4dp"
-                android:layout_marginStart="15dp"
-                android:background="@drawable/line" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/followingLayout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/followingButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/following"
-                style="@style/TextView.DarkTheme"
-                android:fontFamily="@font/kollektif"
-                android:textSize="18sp"
-                android:background="@drawable/button_transparent" />
-
-            <View
-                android:id="@+id/followingIndicator"
-                android:layout_width="match_parent"
-                android:layout_height="4dp"
-                android:layout_marginEnd="15dp"
-                android:background="@drawable/line"
-                android:visibility="invisible" />
-        </LinearLayout>
-
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
