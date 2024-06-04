@@ -227,7 +227,7 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
                 }
 
             // Aquí agregamos el usuario actual a la colección userFollow del usuario seguido
-            val currentUserData = hashMapOf("followerId" to currentUserId)
+            val currentUserData = hashMapOf("followedUserId" to userId)
             db.collection("users").document(currentUserId)
                 .collection("userFollow").document(userId)
                 .set(currentUserData)
@@ -260,6 +260,7 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
                 }
         }
     }
+
 
     private fun updateFollowButton(button: Button, isFollowing: Boolean) {
         if (isFollowing) {

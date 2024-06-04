@@ -286,7 +286,7 @@ class HomeFragment : Fragment() {
                 if (documents.isEmpty) {
                     Log.d("HomeFragment", "No se encontraron documentos en userFollowers")
                 }
-                val followedUsersIds = documents.mapNotNull { it.getString("followerId") }
+                val followedUsersIds = documents.mapNotNull { it.getString("followedUserId") }
                 Log.d("HomeFragment", "Usuarios seguidos: $followedUsersIds")
                 fetchPosts(followedUsersIds)
             }
