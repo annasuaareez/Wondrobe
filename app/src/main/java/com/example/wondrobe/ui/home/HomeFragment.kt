@@ -39,7 +39,9 @@ class HomeFragment : Fragment() {
     private lateinit var blackOverlay: View
     private lateinit var optionsLayout: LinearLayout
     private lateinit var recyclerViewFollowingUsers: RecyclerView
+    private lateinit var recyclerViewAllPosts: RecyclerView
     private lateinit var postAdapter: PostAdapter
+    private lateinit var allPostsAdapter: PostAdapter
 
     companion object {
         private const val REQUEST_USER_FOLLOW = 1001
@@ -61,12 +63,21 @@ class HomeFragment : Fragment() {
 
         Log.e("HomeFragment", "UID del usuario: $userId")
 
+        val forYouButton = binding.forYouButton
+        val followingButton = binding.followingButton
+        val forYouIndicator = binding.forYouIndicator
+        val followingIndicator = binding.followingIndicator
+
         searchView = binding.searchView
         listView = binding.listUsers
         blackOverlay = binding.blackOverlay
         optionsLayout = binding.optionsLayout
         recyclerViewFollowingUsers = binding.recyclerViewFollowingUsers
         recyclerViewFollowingUsers.layoutManager = LinearLayoutManager(requireContext())
+        recyclerViewAllPosts = binding.recyclerViewAllPosts
+        recyclerViewAllPosts.layoutManager = LinearLayoutManager(requireContext())
+
+        loadAllPosts()
 
         postAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
             override fun onPostClick(postId: String) {
@@ -75,10 +86,12 @@ class HomeFragment : Fragment() {
         })
         recyclerViewFollowingUsers.adapter = postAdapter
 
-        val forYouButton = binding.forYouButton
-        val followingButton = binding.followingButton
-        val forYouIndicator = binding.forYouIndicator
-        val followingIndicator = binding.followingIndicator
+        allPostsAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
+            override fun onPostClick(postId: String) {
+                // Maneja el clic en una publicación
+            }
+        })
+        recyclerViewAllPosts.adapter = allPostsAdapter
 
         listView.visibility = View.GONE  // Ocultar el ListView inicialmente
 
@@ -124,12 +137,15 @@ class HomeFragment : Fragment() {
         forYouButton.setOnClickListener {
             animateIndicatorChange(forYouIndicator, followingIndicator)
             recyclerViewFollowingUsers.visibility = View.GONE
+            recyclerViewAllPosts.visibility = View.VISIBLE
+            loadAllPosts()
         }
 
         followingButton.setOnClickListener {
             animateIndicatorChange(followingIndicator, forYouIndicator)
             loadFollowingPosts()
             recyclerViewFollowingUsers.visibility = View.VISIBLE
+            recyclerViewAllPosts.visibility = View.GONE
         }
 
         return root
@@ -221,6 +237,41 @@ class HomeFragment : Fragment() {
 
         hideAnimator.start()
         showAnimator.start()
+    }
+
+    private fun loadAllPosts() {
+        val currentUserUid = UserUtils.getUserId(requireContext()).toString()
+
+        db.collection("users")
+            .get()
+            .addOnSuccessListener { documents ->
+                val usersIds = documents.mapNotNull { it.id }.filter { it != currentUserUid }
+
+                db.collection("posts")
+                    .whereIn("userId", usersIds)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        val posts = mutableListOf<Post>()
+                        for (document in documents) {
+                            val postId = document.id
+                            val userId = document.getString("userId") ?: ""
+                            val imageUrl = document.getString("imageUrl") ?: ""
+                            val title = document.getString("title") ?: ""
+                            val description = document.getString("description") ?: ""
+                            val timestamp = document.getTimestamp("timestamp")?.toDate() ?: Date()
+
+                            val post = Post(postId, userId, imageUrl, title, description, timestamp)
+                            posts.add(post)
+                        }
+                        allPostsAdapter.updateData(posts)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("HomeFragment", "Error getting posts", exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("HomeFragment", "Error getting users", exception)
+            }
     }
 
     private fun loadFollowingPosts() {
