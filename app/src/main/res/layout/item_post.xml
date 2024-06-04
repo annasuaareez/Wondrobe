@@ -3,28 +3,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="16dp">
 
     <ImageView
-        android:id="@+id/postImage"
+        android:id="@+id/post_image"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/post_description" />
+        android:scaleType="centerCrop" />
 
     <TextView
-        android:id="@+id/postUsername"
+        android:id="@+id/post_title_home"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:paddingTop="4dp"
-        android:text="@string/username" />
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/postTitle"
+        android:id="@+id/post_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="2dp"
-        android:text="@string/post_tittle" />
-
+        android:layout_marginTop="4dp"
+        android:textSize="14sp" />
 </LinearLayout>

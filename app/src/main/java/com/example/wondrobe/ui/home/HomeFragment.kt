@@ -15,9 +15,8 @@ import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wondrobe.R
-import com.example.wondrobe.adapters.PostsAdapter
 import com.example.wondrobe.adapters.UserAdapter
+import com.example.wondrobe.adapters.PostAdapter
 import com.example.wondrobe.data.Post
 import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
@@ -25,7 +24,6 @@ import com.example.wondrobe.ui.user.UserFollow
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import java.util.Date
 
 class HomeFragment : Fragment() {
@@ -39,17 +37,16 @@ class HomeFragment : Fragment() {
     private lateinit var searchView: SearchView
     private lateinit var listView: ListView
     private lateinit var blackOverlay: View
+    private lateinit var optionsLayout: LinearLayout
     private lateinit var recyclerViewFollowingUsers: RecyclerView
-    private lateinit var postsAdapter: PostsAdapter
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var postAdapter: PostAdapter
 
     companion object {
         private const val REQUEST_USER_FOLLOW = 1001
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -67,18 +64,35 @@ class HomeFragment : Fragment() {
         searchView = binding.searchView
         listView = binding.listUsers
         blackOverlay = binding.blackOverlay
+        optionsLayout = binding.optionsLayout
+        recyclerViewFollowingUsers = binding.recyclerViewFollowingUsers
+        recyclerViewFollowingUsers.layoutManager = LinearLayoutManager(requireContext())
+
+        postAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
+            override fun onPostClick(postId: String) {
+                // Aquí puedes manejar el clic en una publicación
+            }
+        })
+        recyclerViewFollowingUsers.adapter = postAdapter
+
+        val forYouButton = binding.forYouButton
+        val followingButton = binding.followingButton
+        val forYouIndicator = binding.forYouIndicator
+        val followingIndicator = binding.followingIndicator
 
         listView.visibility = View.GONE  // Ocultar el ListView inicialmente
 
         searchView.setOnSearchClickListener {
             blackOverlay.visibility = View.VISIBLE
             listView.visibility = View.VISIBLE  // Mostrar el ListView cuando la búsqueda está activa
+            optionsLayout.elevation = 4f // Reducir la elevación cuando la búsqueda está activa
         }
 
         searchView.setOnCloseListener {
             blackOverlay.visibility = View.GONE
             listView.visibility = View.GONE  // Ocultar el ListView cuando la búsqueda no está activa
             updateListView(emptyList(), listView)
+            optionsLayout.elevation = 12f // Restaurar la elevación cuando la búsqueda no está activa
             false
         }
 
@@ -107,19 +121,18 @@ class HomeFragment : Fragment() {
             }
         })
 
-        return root
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // Si el SearchView está abierto y tiene texto escrito
-        if (!searchView.isIconified && searchView.query.isNotEmpty()) {
-            searchView.setQuery("", false)
-            searchView.isIconified = true
-            blackOverlay.visibility = View.GONE
-            listView.visibility = View.GONE
-            updateListView(emptyList(), listView)
+        forYouButton.setOnClickListener {
+            animateIndicatorChange(forYouIndicator, followingIndicator)
+            recyclerViewFollowingUsers.visibility = View.GONE
         }
+
+        followingButton.setOnClickListener {
+            animateIndicatorChange(followingIndicator, forYouIndicator)
+            loadFollowingPosts()
+            recyclerViewFollowingUsers.visibility = View.VISIBLE
+        }
+
+        return root
     }
 
     private fun searchUsers(query: String, listView: ListView) {
@@ -153,7 +166,7 @@ class HomeFragment : Fragment() {
                 updateListView(usersList, listView)
             }
             .addOnFailureListener { exception ->
-                // Handle errors
+                // Manejar errores
                 Log.e("HomeFragment", "Error searching users", exception)
             }
     }
@@ -169,8 +182,10 @@ class HomeFragment : Fragment() {
 
         if (usersList.isEmpty()) {
             listView.visibility = View.GONE
+            optionsLayout.elevation = 12f // Aumentar la elevación cuando el ListView está vacío
         } else {
             listView.visibility = View.VISIBLE
+            optionsLayout.elevation = 4f // Reducir la elevación cuando el ListView tiene elementos
         }
 
         listView.setOnItemClickListener { parent, view, position, id ->
@@ -181,6 +196,82 @@ class HomeFragment : Fragment() {
             intent.putExtra("UserID", userId)
             startActivityForResult(intent, REQUEST_USER_FOLLOW)
         }
+    }
+
+    private fun animateIndicatorChange(showIndicator: View, hideIndicator: View) {
+        val hideAnimator = ObjectAnimator.ofFloat(hideIndicator, "alpha", 1f, 0f)
+        hideAnimator.duration = 250 // Duración de la animación en milisegundos
+        hideAnimator.interpolator = AccelerateDecelerateInterpolator()
+
+        val showAnimator = ObjectAnimator.ofFloat(showIndicator, "alpha", 0f, 1f)
+        showAnimator.duration = 250 // Duración de la animación en milisegundos
+        showAnimator.interpolator = AccelerateDecelerateInterpolator()
+
+        hideAnimator.addUpdateListener {
+            if (hideIndicator.alpha == 0f) {
+                hideIndicator.visibility = View.INVISIBLE
+            }
+        }
+
+        showAnimator.addUpdateListener {
+            if (showIndicator.alpha == 1f) {
+                showIndicator.visibility = View.VISIBLE
+            }
+        }
+
+        hideAnimator.start()
+        showAnimator.start()
+    }
+
+    private fun loadFollowingPosts() {
+        //val currentUserUid = auth.currentUser?.uid ?:
+        val currentUserUid = UserUtils.getUserId(requireContext()).toString()
+        Log.d("HomeFragment", "Cargando posts de usuarios seguidos para UID: $currentUserUid")
+
+        // Obtener los IDs de los usuarios seguidos
+        db.collection("users").document(currentUserUid).collection("userFollow")
+            .get()
+            .addOnSuccessListener { documents ->
+                if (documents.isEmpty) {
+                    Log.d("HomeFragment", "No se encontraron documentos en userFollowers")
+                }
+                val followedUsersIds = documents.mapNotNull { it.getString("followerId") }
+                Log.d("HomeFragment", "Usuarios seguidos: $followedUsersIds")
+                fetchPosts(followedUsersIds)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("HomeFragment", "Error obteniendo usuarios seguidos", exception)
+            }
+    }
+
+    private fun fetchPosts(followedUsersIds: List<String>) {
+        if (followedUsersIds.isEmpty()) {
+            Log.d("HomeFragment", "No hay usuarios seguidos, mostrando lista vacía de posts")
+            postAdapter.updateData(emptyList())
+            return
+        }
+
+        db.collection("posts")
+            .whereIn("userId", followedUsersIds)
+            .get()
+            .addOnSuccessListener { documents ->
+                val posts = mutableListOf<Post>()
+                for (document in documents) {
+                    val postId = document.id
+                    val userId = document.getString("userId") ?: ""
+                    val imageUrl = document.getString("imageUrl") ?: ""
+                    val title = document.getString("title") ?: ""
+                    val description = document.getString("description") ?: ""
+                    val timestamp = document.getTimestamp("timestamp")?.toDate() ?: Date()
+
+                    val post = Post(postId, userId, imageUrl, title, description, timestamp)
+                    posts.add(post)
+                }
+                postAdapter.updateData(posts)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("HomeFragment", "Error getting posts", exception)
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -197,3 +288,4 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 }
+

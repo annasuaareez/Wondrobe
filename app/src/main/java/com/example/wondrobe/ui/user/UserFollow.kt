@@ -162,7 +162,7 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
         }
     }
 
-    private fun toggleFollowUser(selectedUser: User) {
+    /*private fun toggleFollowUser(selectedUser: User) {
         val userId = selectedUser.uid ?: return
         val currentUserId = UserUtils.getUserId(this) ?: return
 
@@ -196,6 +196,67 @@ class UserFollow : AppCompatActivity(), ImageFollowAdapter.OnImageClickListener 
                 }
                 .addOnFailureListener { e ->
                     Log.e("UserFollow", "Error unfollowing user: ${e.message}")
+                }
+        }
+    }*/
+
+    private fun toggleFollowUser(selectedUser: User) {
+        val userId = selectedUser.uid ?: return
+        val currentUserId = UserUtils.getUserId(this) ?: return
+
+        val isFollowing = !SharedPreferencesManager.getFollowingState(this, userId)
+        SharedPreferencesManager.saveFollowingState(this, userId, isFollowing)
+
+        selectedUser.isFollowing = isFollowing
+        updateFollowButton(followButton, isFollowing)
+
+        val db = FirebaseFirestore.getInstance()
+        val userFollowsRef = db.collection("users").document(userId)
+            .collection("userFollowers").document(currentUserId)
+
+        if (isFollowing) {
+            val followerData = hashMapOf("followerId" to currentUserId)
+            userFollowsRef.set(followerData)
+                .addOnSuccessListener {
+                    Log.d("UserFollow", "User followed successfully")
+                    updateFollowersCount(selectedUser, followersTextView, true, currentUserId)
+                    updateFollowingCount(currentUserId, true)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UserFollow", "Error following user: ${e.message}")
+                }
+
+            // Aquí agregamos el usuario actual a la colección userFollow del usuario seguido
+            val currentUserData = hashMapOf("followerId" to currentUserId)
+            db.collection("users").document(currentUserId)
+                .collection("userFollow").document(userId)
+                .set(currentUserData)
+                .addOnSuccessListener {
+                    Log.d("UserFollow", "Current user added to userFollow successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UserFollow", "Error adding current user to userFollow: ${e.message}")
+                }
+        } else {
+            userFollowsRef.delete()
+                .addOnSuccessListener {
+                    Log.d("UserFollow", "User unfollowed successfully")
+                    updateFollowersCount(selectedUser, followersTextView, false, currentUserId)
+                    updateFollowingCount(currentUserId, false)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UserFollow", "Error unfollowing user: ${e.message}")
+                }
+
+            // Aquí eliminamos al usuario actual de la colección userFollow del usuario seguido
+            db.collection("users").document(currentUserId)
+                .collection("userFollow").document(userId)
+                .delete()
+                .addOnSuccessListener {
+                    Log.d("UserFollow", "Current user removed from userFollow successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UserFollow", "Error removing current user from userFollow: ${e.message}")
                 }
         }
     }
