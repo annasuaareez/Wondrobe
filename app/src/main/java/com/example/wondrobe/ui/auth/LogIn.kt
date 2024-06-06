@@ -22,6 +22,7 @@ import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
 import com.example.wondrobe.utils.PasswordEncryptor
 import com.example.wondrobe.utils.PasswordVisibility
+import com.example.wondrobe.utils.SessionManager
 import com.example.wondrobe.utils.UserUtils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -180,6 +181,8 @@ class LogIn : AppCompatActivity() {
                             // Credenciales válidas, redirigir al usuario al MainActivity
                             val userId = documents.documents[0].id
                             UserUtils.saveUserId(this, userId)
+
+                            SessionManager.setLogin(this, true)
                             Log.e("Log In", userId)
                             showAlertToast("Successful login")
                             redirectToMainPage()
@@ -219,6 +222,8 @@ class LogIn : AppCompatActivity() {
                     // Usuario encontrado en Firestore, obtener su ID y redirigir al MainActivity
                     val userId = documents.documents[0].id
                     UserUtils.saveUserId(this, userId)
+
+                    SessionManager.setLogin(this, true)
                     showAlertToast("Successful login")
                     redirectToMainPage()
                 } else {

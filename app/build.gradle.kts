@@ -42,19 +42,20 @@ android {
 dependencies {
 
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
     //Splash
     implementation("androidx.core:core-splashscreen:1.0.1")
     //Firebase auth
     implementation("com.google.firebase:firebase-auth:23.0.0")
-    implementation("com.google.firebase:firebase-analytics:22.0.0")
-    implementation("com.google.android.gms:play-services-auth:21.1.1")
+    implementation ("com.google.firebase:firebase-appcheck:18.0.0")
+    implementation("com.google.firebase:firebase-analytics:22.0.1")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
     //Cloud Firestore
     implementation("com.google.firebase:firebase-firestore:25.0.0")
     //Glide es una biblioteca de carga y visualización de imágenes para Android que simplifica el proceso de cargar imágenes desde diversos orígenes
@@ -64,7 +65,7 @@ dependencies {
     //Google Material Design
     implementation("com.google.android.material:material:1.12.0")
     //SearchView
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
     //implementation("com.android.car.ui:car-ui-lib:2.6.0")
     implementation("com.google.code.gson:gson:2.10.1")
     //Java Mail
@@ -79,7 +80,7 @@ dependencies {
     //RSA Password
     implementation ("org.bouncycastle:bcprov-jdk15on:1.68")
     implementation ("org.bouncycastle:bcpkix-jdk15on:1.68")
-    implementation("androidx.activity:activity:1.8.0")
+    implementation ("androidx.activity:activity-ktx:1.9.0")
 
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     testImplementation("junit:junit:4.13.2")

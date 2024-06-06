@@ -43,6 +43,7 @@ class WardrobeFragment : Fragment() {
         val outfitButton = binding.outfitsButton
         val clothesIndicator = binding.clothesIndicator
         val outfitIndicator = binding.outfitIndicator
+        val floatingActionButton = binding.floatingActionButton2
 
         setupRecyclerView()
         setupSpinner()
@@ -51,11 +52,13 @@ class WardrobeFragment : Fragment() {
         clothesButton.setOnClickListener {
             animateIndicatorChange(clothesIndicator, outfitIndicator)
             showClothesContent()
+            floatingActionButton.visibility = View.GONE
         }
 
         outfitButton.setOnClickListener {
             animateIndicatorChange(outfitIndicator, clothesIndicator)
             showOutfitContent()
+            floatingActionButton.visibility = View.VISIBLE
         }
 
         return root
@@ -183,5 +186,4 @@ class WardrobeFragment : Fragment() {
         startActivity(intent)
         activity?.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
-
 }

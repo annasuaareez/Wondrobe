@@ -20,6 +20,7 @@ import com.example.wondrobe.adapters.PostAdapter
 import com.example.wondrobe.data.Post
 import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
+import com.example.wondrobe.ui.user.PostDetails.DetailsPostFollow
 import com.example.wondrobe.ui.user.UserFollow
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
@@ -80,15 +81,21 @@ class HomeFragment : Fragment() {
         loadAllPosts()
 
         postAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
-            override fun onPostClick(postId: String) {
-                // Aquí puedes manejar el clic en una publicación
+            override fun onPostClick(post: Post) {
+                val intent = Intent(requireContext(), DetailsPostFollow::class.java)
+                intent.putExtra("PostID", post.postId)
+                intent.putExtra("UserID", post.userId)
+                startActivity(intent)
             }
         })
         recyclerViewFollowingUsers.adapter = postAdapter
 
         allPostsAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
-            override fun onPostClick(postId: String) {
-                // Maneja el clic en una publicación
+            override fun onPostClick(post: Post) {
+                val intent = Intent(requireContext(), DetailsPostFollow::class.java)
+                intent.putExtra("PostID", post.postId)
+                intent.putExtra("UserID", post.userId)
+                startActivity(intent)
             }
         })
         recyclerViewAllPosts.adapter = allPostsAdapter

@@ -139,6 +139,9 @@ class DetailsPostFollow : AppCompatActivity() {
     }
 
     private fun toggleSavePost() {
+        Log.d("DetailsPost", "Toggling save state for postId: $postId, userId: $userId")
+        Log.d("DetailsPost", "Current save state: $isPostSaved")
+
         isPostSaved = !isPostSaved
         updateSaveIconColor()
 

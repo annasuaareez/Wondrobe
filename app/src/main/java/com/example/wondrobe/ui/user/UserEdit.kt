@@ -26,6 +26,7 @@ import com.bumptech.glide.request.RequestListener
 import com.example.wondrobe.R
 import com.example.wondrobe.databinding.ActivityUserEditBinding
 import com.example.wondrobe.ui.auth.LogIn
+import com.example.wondrobe.utils.SessionManager
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -109,7 +110,10 @@ class UserEdit : AppCompatActivity() {
 
         binding.logOutButton.setOnClickListener {
             // Cerrar la sesión del usuario
-            FirebaseAuth.getInstance().signOut()
+            //FirebaseAuth.getInstance().signOut()
+
+            // Limpiar sesión
+            SessionManager.clearSession(this)
 
             // Iniciar la actividad de inicio de sesión (LogIn)
             val intent = Intent(this, LogIn::class.java)

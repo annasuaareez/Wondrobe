@@ -1,7 +1,6 @@
 package com.example.wondrobe.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.wondrobe.R
 import com.example.wondrobe.data.Post
-import com.google.firebase.firestore.FirebaseFirestore
 
 class PostAdapter(
     private val context: Context,
@@ -20,7 +18,7 @@ class PostAdapter(
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     interface OnPostClickListener {
-        fun onPostClick(postId: String)
+        fun onPostClick(post: Post)
     }
 
     fun updateData(newPosts: List<Post>) {
@@ -50,9 +48,8 @@ class PostAdapter(
             descriptionView.text = post.description
             Glide.with(context).load(post.imageUrl).into(imageView)
             itemView.setOnClickListener {
-                post.postId?.let { postId -> listener.onPostClick(postId) }
+                listener.onPostClick(post)
             }
         }
     }
-
 }

@@ -77,7 +77,7 @@ class ForgotPassword : AppCompatActivity() {
         // Generar código de verificación aleatorio
         resetCode = generateRandomCode()
 
-        // Enviar correo electrónico de verificación con el código resetCode a la dirección de correo electrónico del usuario
+        // Enviar correo electrónico de verificación
         val subject = "Wondrobe Password Reset"
         val message = "Your password reset code is: $resetCode"
         val intent = Intent(Intent.ACTION_SEND)
@@ -101,7 +101,6 @@ class ForgotPassword : AppCompatActivity() {
             val enteredCode = verificationCodeEditText.text.toString().trim()
             if (enteredCode == resetCode) {
                 // El código ingresado por el usuario coincide, permitir al usuario restablecer la contraseña
-                // Llamar a la función para restablecer la contraseña
                 resetPassword(email)
             } else {
                 showAlertDialog("Invalid Code", "Please enter the correct verification code.")
@@ -110,8 +109,6 @@ class ForgotPassword : AppCompatActivity() {
     }
 
     private fun resetPassword(email: String) {
-        // Aquí deberías implementar la lógica para permitir al usuario restablecer la contraseña.
-        // Por ejemplo:
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
