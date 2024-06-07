@@ -2,29 +2,27 @@ package com.example.wondrobe.ui.auth
 
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.Random
+import com.google.firebase.ktx.Firebase
 
 class ForgotPassword : AppCompatActivity() {
 
     private lateinit var backButton: ImageView
     private lateinit var emailEditText: EditText
-    private lateinit var verificationCodeEditText: EditText
     private lateinit var sendButton: AppCompatButton
     private lateinit var alertDialogBuilder: AlertDialog.Builder
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
-    private var resetCode: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +30,12 @@ class ForgotPassword : AppCompatActivity() {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
-        backButton= findViewById(R.id.backButton)
+        backButton = findViewById(R.id.backButton)
         emailEditText = findViewById(R.id.emailEditText)
-        verificationCodeEditText = findViewById(R.id.verificationCodeEditText)
         sendButton = findViewById(R.id.sendPassword)
         alertDialogBuilder = AlertDialog.Builder(this)
         firestore = FirebaseFirestore.getInstance()
-        auth = FirebaseAuth.getInstance()
+        auth = Firebase.auth
 
         backButton.setOnClickListener {
             val intent = Intent(this, LogIn::class.java)
@@ -48,7 +45,7 @@ class ForgotPassword : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
-            if (ValidationUtils.isEmailValid(email)) {
+            if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 checkEmailAvailability(email)
             } else {
                 showAlertDialog("Invalid Email", "Please enter a valid email address.")
@@ -57,62 +54,28 @@ class ForgotPassword : AppCompatActivity() {
     }
 
     private fun checkEmailAvailability(email: String) {
-        firestore.collection("users")
-            .whereEqualTo("email", email)
-            .get()
+        // Aquí asumimos que tienes una colección llamada "users" en Firestore
+        val usersCollection = firestore.collection("users")
+        usersCollection.whereEqualTo("email", email).get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
-                    // El correo electrónico está registrado, procedemos a enviar el código de verificación
-                    sendVerificationCode(email)
+                    // El correo electrónico está registrado, procedemos a enviar el correo de restablecimiento
+                    sendPasswordResetEmail(email)
                 } else {
                     showAlertDialog("Email Not Found", "This email is not registered. Please enter a registered email.")
                 }
             }
             .addOnFailureListener { e ->
-                showAlertDialog("Database Error", "An error occurred while accessing the database.")
+                // Manejar errores
+                showAlertDialog("Error", "An error occurred while checking email availability: ${e.message}")
             }
     }
 
-    private fun sendVerificationCode(email: String) {
-        // Generar código de verificación aleatorio
-        resetCode = generateRandomCode()
-
-        // Enviar correo electrónico de verificación
-        val subject = "Wondrobe Password Reset"
-        val message = "Your password reset code is: $resetCode"
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "message/rfc822"
-        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
-        intent.putExtra(Intent.EXTRA_SUBJECT, subject)
-        intent.putExtra(Intent.EXTRA_TEXT, message)
-        startActivity(Intent.createChooser(intent, "Choose an email client"))
-
-        // Cambiar la visibilidad del campo de ingreso del código de verificación a visible
-        verificationCodeEditText.visibility = View.VISIBLE
-
-        // Mostrar el campo para ingresar el código de verificación
-        verificationCodeEditText.isEnabled = true
-        verificationCodeEditText.requestFocus()
-
-        // Cambiar el texto del botón para permitir al usuario confirmar el código
-        sendButton.text = "Confirm Code"
-
-        sendButton.setOnClickListener {
-            val enteredCode = verificationCodeEditText.text.toString().trim()
-            if (enteredCode == resetCode) {
-                // El código ingresado por el usuario coincide, permitir al usuario restablecer la contraseña
-                resetPassword(email)
-            } else {
-                showAlertDialog("Invalid Code", "Please enter the correct verification code.")
-            }
-        }
-    }
-
-    private fun resetPassword(email: String) {
+    private fun sendPasswordResetEmail(email: String) {
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Contraseña restablecida con éxito
+                    // Correo de restablecimiento enviado con éxito
                     Toast.makeText(this, "Password reset email sent successfully.", Toast.LENGTH_SHORT).show()
                     finish()
                 } else {
@@ -120,16 +83,6 @@ class ForgotPassword : AppCompatActivity() {
                     Toast.makeText(this, "Error resetting password: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
-            .addOnFailureListener { e ->
-                // Manejar errores de Firebase
-                showAlertDialog("Error", "An error occurred while resetting password.")
-            }
-    }
-
-    private fun generateRandomCode(): String {
-        val min = 10000
-        val max = 99999
-        return (min + Random().nextInt(max - min)).toString()
     }
 
     private fun showAlertDialog(title: String, message: String) {
