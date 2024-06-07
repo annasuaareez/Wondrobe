@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.R
 import com.example.wondrobe.data.User
-import com.example.wondrobe.utils.PasswordEncryptor
 import com.example.wondrobe.utils.PasswordVisibility
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -229,8 +228,13 @@ class SignUp : AppCompatActivity() {
                                 .addOnCompleteListener(this) { task ->
                                     if (task.isSuccessful) {
                                         // Usuario creado exitosamente en Firebase Authentication
-                                        val encryptedPassword = PasswordEncryptor().encryptPassword(password)
-                                        val user = User(uid = FirebaseAuth.getInstance().currentUser?.uid, email = email, username = lowercaseUsername, firstName = firstName, password = encryptedPassword)
+                                        val user = User(
+                                            uid = FirebaseAuth.getInstance().currentUser?.uid,
+                                            email = email,
+                                            username = lowercaseUsername,
+                                            firstName = firstName,
+                                            password = "", // No se guarda la contraseña aquí
+                                        )
 
                                         val db = FirebaseFirestore.getInstance()
 

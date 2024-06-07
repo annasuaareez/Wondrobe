@@ -1,5 +1,3 @@
-package com.example.wondrobe.adapters
-
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +12,7 @@ import com.example.wondrobe.R
 import com.example.wondrobe.data.Post
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.util.Locale
 
 class PostAdapter(
     private val context: Context,
@@ -22,15 +21,18 @@ class PostAdapter(
     private val isPostSaved: (String, (Boolean) -> Unit) -> Unit
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
+    private val db = FirebaseFirestore.getInstance()
+
     interface OnPostClickListener {
-        fun onPostClick(post: Post)
         fun onSaveClick(post: Post, saveIconView: ImageView)
     }
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val postImage: ImageView = itemView.findViewById(R.id.post_image)
+        val postUsernameView: TextView = itemView.findViewById(R.id.post_username)
         val postTitle: TextView = itemView.findViewById(R.id.post_title)
         val postDescription: TextView = itemView.findViewById(R.id.post_description)
+        val dateView: TextView = itemView.findViewById(R.id.post_date) // Declaring dateView here
         val saveIcon: ImageView = itemView.findViewById(R.id.saveIconPost)
     }
 
@@ -42,17 +44,57 @@ class PostAdapter(
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
         holder.postTitle.text = post.title
-        holder.postDescription.text = post.description
         Glide.with(context).load(post.imageUrl).into(holder.postImage)
 
-        post.postId?.let {
-            isPostSaved(it) { isSaved ->
-                updateSaveIcon(holder.saveIcon, isSaved)
-            }
+        // Set username
+        post.userId?.let { userId ->
+            db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    val username = document.getString("username")
+                    holder.postUsernameView.text = username ?: ""
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("PostAdapter", "Error getting username", exception)
+                }
         }
 
-        holder.itemView.setOnClickListener {
-            listener.onPostClick(post)
+        // Check if description exists
+        if (post.description.isNullOrEmpty()) {
+            holder.postDescription.visibility = View.GONE
+            holder.dateView.visibility = View.VISIBLE
+            val params = holder.postDescription.layoutParams as ConstraintLayout.LayoutParams
+            params.topToBottom = holder.postUsernameView.id
+            holder.postDescription.layoutParams = params
+
+            // Adjust date position
+            val dateParams = holder.dateView.layoutParams as ConstraintLayout.LayoutParams
+            dateParams.topToBottom = holder.postUsernameView.id
+            holder.dateView.layoutParams = dateParams
+        } else {
+            holder.postDescription.visibility = View.VISIBLE
+            holder.dateView.visibility = View.VISIBLE
+
+            // Adjust constraints
+            val params = holder.postDescription.layoutParams as ConstraintLayout.LayoutParams
+            params.topToBottom = holder.postUsernameView.id
+            holder.postDescription.layoutParams = params
+
+            val dateParams = holder.dateView.layoutParams as ConstraintLayout.LayoutParams
+            dateParams.topToBottom = holder.postDescription.id
+            holder.dateView.layoutParams = dateParams
+        }
+
+        holder.postDescription.text = post.description
+        val formattedDate = post.date?.let {
+            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it)
+        }
+        holder.dateView.text = formattedDate
+
+        post.postId?.let { postId ->
+            isPostSaved(postId) { isSaved ->
+                updateSaveIcon(holder.saveIcon, isSaved)
+            }
         }
 
         holder.saveIcon.setOnClickListener {

@@ -1,6 +1,8 @@
 package com.example.wondrobe.ui.home
 
+import PostAdapter
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -18,7 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wondrobe.R
 import com.example.wondrobe.adapters.UserAdapter
-import com.example.wondrobe.adapters.PostAdapter
 import com.example.wondrobe.data.Post
 import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
@@ -85,13 +86,6 @@ class HomeFragment : Fragment() {
         loadAllPosts()
 
         postAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
-            override fun onPostClick(post: Post) {
-                val intent = Intent(requireContext(), DetailsPostFollow::class.java)
-                intent.putExtra("PostID", post.postId)
-                intent.putExtra("UserID", post.userId)
-                startActivity(intent)
-            }
-
             override fun onSaveClick(post: Post, saveIconView: ImageView) {
                 toggleSavePost(post, saveIconView)
             }
@@ -99,12 +93,12 @@ class HomeFragment : Fragment() {
         recyclerViewFollowingUsers.adapter = postAdapter
 
         allPostsAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
-            override fun onPostClick(post: Post) {
+            /*override fun onPostClick(post: Post) {
                 val intent = Intent(requireContext(), DetailsPostFollow::class.java)
                 intent.putExtra("PostID", post.postId)
                 intent.putExtra("UserID", post.userId)
                 startActivity(intent)
-            }
+            }*/
 
             override fun onSaveClick(post: Post, saveIconView: ImageView) {
                 toggleSavePost(post, saveIconView)
@@ -346,6 +340,7 @@ class HomeFragment : Fragment() {
             }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun updatePostSaveStates(posts: MutableList<Post>) {
         val userId = UserUtils.getUserId(requireContext()).toString()
         val userSavedPostsRef = db.collection("users").document(userId).collection("savedPosts")
@@ -396,9 +391,7 @@ class HomeFragment : Fragment() {
                 userSavedPostsRef.set(saveData)
                     .addOnSuccessListener {
                         Log.d("HomeFragment", "Post saved successfully")
-                        if (postId != null) {
-                            SaveManager.savePost(requireContext(), postId)
-                        }
+                        SaveManager.savePost(requireContext(), postId)
                         updateSaveIcon(saveIconView, true)
                         post.isSaved = true
                     }

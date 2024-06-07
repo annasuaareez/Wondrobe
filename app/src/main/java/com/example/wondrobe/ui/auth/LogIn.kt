@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
 import com.example.wondrobe.MainActivity
 import com.example.wondrobe.R
-import com.example.wondrobe.utils.PasswordEncryptor
 import com.example.wondrobe.utils.PasswordVisibility
 import com.example.wondrobe.utils.SessionManager
 import com.example.wondrobe.utils.UserUtils
@@ -34,6 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class LogIn : AppCompatActivity() {
     private val RC_SIGN_IN = 9001
+    private lateinit var mAuth: FirebaseAuth
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +43,9 @@ class LogIn : AppCompatActivity() {
         supportActionBar?.hide()
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+
+        // Initialize FirebaseAuth
+        mAuth = FirebaseAuth.getInstance()
 
         // Cambiar la imagen de acuerdo con el tema actual
         val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
@@ -69,7 +72,7 @@ class LogIn : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         delegate.applyDayNight()
 
-       if (currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+        if (currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
             // Modo oscuro
             isotypeImageView.setImageResource(R.drawable.isotype_white)
         } else {
@@ -156,47 +159,40 @@ class LogIn : AppCompatActivity() {
                 }
             }
     }
-    
-    private fun loginUser(
-        username: String,
-        password: String
-    ) {
+
+    private fun loginUser(username: String, password: String) {
         val validationResult = ValidationUtils.validateFieldsLogIn(username, password)
 
         if (validationResult == ValidationUtils.ValidationResult.SUCCESS) {
-            val encryptedPassword = PasswordEncryptor().encryptPassword(password)
-            Log.e("Contraseña incresada","")
-
             val db = FirebaseFirestore.getInstance()
             val usersCollection = db.collection("users")
 
             usersCollection.whereEqualTo("username", username)
-                //.whereEqualTo("password", encryptedPassword)
                 .get()
                 .addOnSuccessListener { documents ->
                     if (!documents.isEmpty) {
-                        val encryptedPasswordDB = documents.documents[0].getString("password")
-
-                        if (encryptedPassword == encryptedPasswordDB) {
-                            // Credenciales válidas, redirigir al usuario al MainActivity
-                            val userId = documents.documents[0].id
-                            UserUtils.saveUserId(this, userId)
-
-                            SessionManager.setLogin(this, true)
-                            Log.e("Log In", userId)
-                            showAlertToast("Successful login")
-                            redirectToMainPage()
+                        val email = documents.documents[0].getString("email")
+                        if (email != null) {
+                            mAuth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(this) { task ->
+                                    if (task.isSuccessful) {
+                                        val userId = documents.documents[0].id
+                                        UserUtils.saveUserId(this, userId)
+                                        SessionManager.setLogin(this, true)
+                                        showAlertToast("Successful login")
+                                        redirectToMainPage()
+                                    } else {
+                                        showAlertDialog("Authentication failed: ${task.exception?.message}")
+                                    }
+                                }
                         } else {
-                            // Credenciales inválidas, mostrar diálogo
-                            showAlertDialog("Credentials are not valid")
+                            showAlertDialog("User email not found")
                         }
                     } else {
-                        // La lista de documentos está vacía, el usuario no está registrado
                         showAlertDialog("User not found")
                     }
                 }
                 .addOnFailureListener { e ->
-                    // Manejar errores de Firestore
                     showAlertToast("Error verifying credentials: ${e.message}")
                 }
         } else {
@@ -219,7 +215,6 @@ class LogIn : AppCompatActivity() {
             .get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
-                    // Usuario encontrado en Firestore, obtener su ID y redirigir al MainActivity
                     val userId = documents.documents[0].id
                     UserUtils.saveUserId(this, userId)
 
@@ -227,12 +222,10 @@ class LogIn : AppCompatActivity() {
                     showAlertToast("Successful login")
                     redirectToMainPage()
                 } else {
-                    // Usuario no encontrado en Firestore
                     showAlertToast("User not found in database")
                 }
             }
             .addOnFailureListener { e ->
-                // Manejar errores de Firestore
                 showAlertDialog("Error retrieving user data: ${e.message}")
             }
     }
