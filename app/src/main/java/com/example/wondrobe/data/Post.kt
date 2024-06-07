@@ -10,7 +10,8 @@ data class Post(
     val imageUrl: String?,
     val title: String?,
     val description: String?,
-    val date: Date?
+    val date: Date?,
+    var isSaved: Boolean = false
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
@@ -18,7 +19,8 @@ data class Post(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        parcel.readSerializable() as? Date
+        parcel.readSerializable() as? Date,
+        parcel.readByte() != 0.toByte()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -28,6 +30,7 @@ data class Post(
         parcel.writeString(title)
         parcel.writeString(description)
         parcel.writeSerializable(date)
+        parcel.writeByte(if (isSaved) 1 else 0)
     }
 
     override fun describeContents(): Int {

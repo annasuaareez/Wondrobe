@@ -9,12 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wondrobe.R
 import com.example.wondrobe.adapters.UserAdapter
 import com.example.wondrobe.adapters.PostAdapter
 import com.example.wondrobe.data.Post
@@ -22,9 +24,11 @@ import com.example.wondrobe.data.User
 import com.example.wondrobe.databinding.FragmentHomeBinding
 import com.example.wondrobe.ui.user.PostDetails.DetailsPostFollow
 import com.example.wondrobe.ui.user.UserFollow
+import com.example.wondrobe.utils.SaveManager
 import com.example.wondrobe.utils.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import java.util.Date
 
 class HomeFragment : Fragment() {
@@ -87,7 +91,11 @@ class HomeFragment : Fragment() {
                 intent.putExtra("UserID", post.userId)
                 startActivity(intent)
             }
-        })
+
+            override fun onSaveClick(post: Post, saveIconView: ImageView) {
+                toggleSavePost(post, saveIconView)
+            }
+        }, this::isPostSaved)
         recyclerViewFollowingUsers.adapter = postAdapter
 
         allPostsAdapter = PostAdapter(requireContext(), emptyList(), object : PostAdapter.OnPostClickListener {
@@ -97,7 +105,11 @@ class HomeFragment : Fragment() {
                 intent.putExtra("UserID", post.userId)
                 startActivity(intent)
             }
-        })
+
+            override fun onSaveClick(post: Post, saveIconView: ImageView) {
+                toggleSavePost(post, saveIconView)
+            }
+        }, this::isPostSaved)
         recyclerViewAllPosts.adapter = allPostsAdapter
 
         listView.visibility = View.GONE  // Ocultar el ListView inicialmente
@@ -105,14 +117,14 @@ class HomeFragment : Fragment() {
         searchView.setOnSearchClickListener {
             blackOverlay.visibility = View.VISIBLE
             listView.visibility = View.VISIBLE  // Mostrar el ListView cuando la búsqueda está activa
-            optionsLayout.elevation = 4f // Reducir la elevación cuando la búsqueda está activa
+            optionsLayout.elevation = 4f
         }
 
         searchView.setOnCloseListener {
             blackOverlay.visibility = View.GONE
             listView.visibility = View.GONE  // Ocultar el ListView cuando la búsqueda no está activa
             updateListView(emptyList(), listView)
-            optionsLayout.elevation = 12f // Restaurar la elevación cuando la búsqueda no está activa
+            optionsLayout.elevation = 12f
             false
         }
 
@@ -150,9 +162,9 @@ class HomeFragment : Fragment() {
 
         followingButton.setOnClickListener {
             animateIndicatorChange(followingIndicator, forYouIndicator)
-            loadFollowingPosts()
             recyclerViewFollowingUsers.visibility = View.VISIBLE
             recyclerViewAllPosts.visibility = View.GONE
+            loadFollowingPosts()
         }
 
         return root
@@ -270,6 +282,7 @@ class HomeFragment : Fragment() {
                             val post = Post(postId, userId, imageUrl, title, description, timestamp)
                             posts.add(post)
                         }
+                        updatePostSaveStates(posts)
                         allPostsAdapter.updateData(posts)
                     }
                     .addOnFailureListener { exception ->
@@ -304,7 +317,7 @@ class HomeFragment : Fragment() {
 
     private fun fetchPosts(followedUsersIds: List<String>) {
         if (followedUsersIds.isEmpty()) {
-            Log.d("HomeFragment", "No hay usuarios seguidos, mostrando lista vacía de posts")
+            Log.d("HomeFragment", "No hay usuarios seguidos")
             postAdapter.updateData(emptyList())
             return
         }
@@ -326,18 +339,104 @@ class HomeFragment : Fragment() {
                     posts.add(post)
                 }
                 postAdapter.updateData(posts)
+                updatePostSaveStates(posts)
             }
             .addOnFailureListener { exception ->
                 Log.e("HomeFragment", "Error getting posts", exception)
             }
     }
 
+    private fun updatePostSaveStates(posts: MutableList<Post>) {
+        val userId = UserUtils.getUserId(requireContext()).toString()
+        val userSavedPostsRef = db.collection("users").document(userId).collection("savedPosts")
+
+        userSavedPostsRef.get().addOnSuccessListener { documents ->
+            val savedPostIds = documents.mapNotNull { it.id }
+            posts.forEach { post ->
+                post.isSaved = savedPostIds.contains(post.postId)
+            }
+            allPostsAdapter.notifyDataSetChanged()
+            postAdapter.notifyDataSetChanged()
+        }.addOnFailureListener { exception ->
+            Log.e("HomeFragment", "Error checking saved posts", exception)
+        }
+    }
+
+    private fun toggleSavePost(post: Post, saveIconView: ImageView) {
+        val userId = UserUtils.getUserId(requireContext()).toString()
+        val postId = post.postId
+
+        // Referencia a la colección de posts guardados del usuario
+        val userSavedPostsRef =
+            postId?.let {
+                db.collection("users").document(userId).collection("savedPosts").document(it)
+            }
+
+        // Verificar si el post está guardado
+        userSavedPostsRef?.get()?.addOnSuccessListener { document ->
+            if (document.exists()) {
+                // El post ya está guardado, por lo tanto, se debe eliminar
+                userSavedPostsRef.delete()
+                    .addOnSuccessListener {
+                        Log.d("HomeFragment", "Post unsaved successfully")
+                        SaveManager.removePost(requireContext(), postId)
+                        updateSaveIcon(saveIconView, false)
+                        post.isSaved = false
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("HomeFragment", "Error unsaving post: ${e.message}")
+                    }
+            } else {
+                // El post no está guardado, por lo tanto, se debe guardar
+                val saveData = hashMapOf(
+                    "postId" to postId,
+                    "imageUrl" to post.imageUrl,
+                    "timestamp" to System.currentTimeMillis()
+                )
+                userSavedPostsRef.set(saveData)
+                    .addOnSuccessListener {
+                        Log.d("HomeFragment", "Post saved successfully")
+                        if (postId != null) {
+                            SaveManager.savePost(requireContext(), postId)
+                        }
+                        updateSaveIcon(saveIconView, true)
+                        post.isSaved = true
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("HomeFragment", "Error saving post: ${e.message}")
+                    }
+            }
+        }?.addOnFailureListener { e ->
+            Log.e("HomeFragment", "Error checking saved state: ${e.message}")
+        }
+    }
+
+    private fun updateSaveIcon(saveIconView: ImageView, isSaved: Boolean) {
+        if (isSaved) {
+            saveIconView.setImageResource(R.drawable.ic_save)
+        } else {
+            saveIconView.setImageResource(R.drawable.ic_unsave)
+        }
+    }
+
+    private fun isPostSaved(postId: String, callback: (Boolean) -> Unit) {
+        val userId = UserUtils.getUserId(requireContext()).toString()
+        val userSavedPostsRef = db.collection("users").document(userId).collection("savedPosts").document(postId)
+
+        userSavedPostsRef.get()
+            .addOnSuccessListener { document ->
+                callback(document.exists())
+            }
+            .addOnFailureListener { e ->
+                Log.e("HomeFragment", "Error checking saved state: ${e.message}")
+                callback(false)
+            }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_USER_FOLLOW && resultCode == Activity.RESULT_OK) {
-            // Aquí obtienes los datos devueltos por UserFollowActivity
             val userInfo = data?.getParcelableExtra<User>("user_info")
-            // Haz lo que necesites con la información del usuario
         }
     }
 
@@ -346,4 +445,3 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 }
-

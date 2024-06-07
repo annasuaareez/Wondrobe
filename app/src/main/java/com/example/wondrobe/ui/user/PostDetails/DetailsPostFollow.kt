@@ -33,8 +33,10 @@ class DetailsPostFollow : AppCompatActivity() {
         postId = intent.getStringExtra("PostID") ?: ""
         userId = intent.getStringExtra("UserID") ?: ""
 
+        Log.d("DetailsPostFollow", "Recivido PostID: $postId and UserID: $userId")
+
         Log.d("PostSelect", "Post Id: $postId")
-        Log.e("UserSelect", "Current User Id: $userId")
+        Log.d("UserSelect", "Current User Id: $userId")
 
         saveIcon = findViewById(R.id.saveIconPostFollowActivity)
 
