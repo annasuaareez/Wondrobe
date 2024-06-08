@@ -10,7 +10,8 @@ import com.example.wondrobe.R
 import com.example.wondrobe.data.Clothes
 
 class AllClothesAdapter(
-    private var clothesList: List<Clothes>
+    private var clothesList: List<Clothes>,
+    private val onItemClick: (Clothes) -> Unit
 ) : RecyclerView.Adapter<AllClothesAdapter.ClothesViewHolder>() {
 
     class ClothesViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,6 +28,10 @@ class AllClothesAdapter(
         Glide.with(holder.clothesImage.context)
             .load(clothes.imageUrl)
             .into(holder.clothesImage)
+
+        holder.itemView.setOnClickListener {
+            onItemClick(clothes)
+        }
     }
 
     override fun getItemCount() = clothesList.size

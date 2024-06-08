@@ -2,10 +2,11 @@ package com.example.wondrobe.ui.wardrobe.Outfit
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.wondrobe.R
 import com.example.wondrobe.adapters.AllClothesAdapter
 import com.example.wondrobe.data.Clothes
@@ -17,6 +18,7 @@ class AddOutfit : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var clothesAdapter: AllClothesAdapter
     private lateinit var userId: String
+    private lateinit var canvasImageView: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,12 +29,16 @@ class AddOutfit : AppCompatActivity() {
 
         userId = intent.getStringExtra("USER_ID").toString()
 
+        canvasImageView = findViewById(R.id.canvas)
+
         val recyclerView = findViewById<RecyclerView>(R.id.clothesOutfitRecyclerView)
-        recyclerView.layoutManager = GridLayoutManager(this,2)
-        clothesAdapter = AllClothesAdapter(emptyList())
+        recyclerView.layoutManager = GridLayoutManager(this, 2)
+        clothesAdapter = AllClothesAdapter(emptyList()) { selectedClothes ->
+            selectedClothes.imageUrl?.let { loadClothesImage(it) }
+        }
         recyclerView.adapter = clothesAdapter
 
-        // Obtener datos de Firebase y mostrarlos en RecyclerView
+        // Obtener datos de Firebase Clothes
         loadUserClothes()
     }
 
@@ -48,11 +54,17 @@ class AddOutfit : AppCompatActivity() {
                     clothesList.add(clothes)
                 }
                 Log.d("AddOutfit", "Fetched ${clothesList.size} items")
-                // Agregar datos al Adaptear
+                // Agregar datos al Adaptador
                 clothesAdapter.setItems(clothesList)
             }
             .addOnFailureListener { exception ->
                 Log.e("AddOutfit", "Error fetching clothes", exception)
             }
+    }
+
+    private fun loadClothesImage(imageUrl: String) {
+        Glide.with(this)
+            .load(imageUrl)
+            .into(canvasImageView)
     }
 }
