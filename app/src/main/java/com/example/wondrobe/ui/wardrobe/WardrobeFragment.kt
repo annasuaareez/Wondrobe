@@ -3,6 +3,7 @@ package com.example.wondrobe.ui.wardrobe
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,8 +16,10 @@ import com.example.wondrobe.adapters.ClothesCategoryAdapter
 import com.example.wondrobe.data.Clothes
 import com.example.wondrobe.data.ClothesCategory
 import com.example.wondrobe.databinding.FragmentWardrobeBinding
+import com.example.wondrobe.ui.wardrobe.Outfit.AddOutfit
 import com.example.wondrobe.ui.wardrobe.details.CategoryDetails
 import com.example.wondrobe.utils.UserUtils
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 
@@ -28,6 +31,7 @@ class WardrobeFragment : Fragment() {
     private lateinit var categoryAdapter: ClothesCategoryAdapter
     private val categories = mutableListOf<ClothesCategory>()
     private var selectedType: String? = null
+    private lateinit var addOutfit: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,22 +47,29 @@ class WardrobeFragment : Fragment() {
         val outfitButton = binding.outfitsButton
         val clothesIndicator = binding.clothesIndicator
         val outfitIndicator = binding.outfitIndicator
-        val floatingActionButton = binding.floatingActionButton2
+        addOutfit = binding.addOutfit
 
         setupRecyclerView()
         setupSpinner()
         loadClothes()
 
         clothesButton.setOnClickListener {
+            Log.d("WardrobeFragment", "Clothes button clicked")
             animateIndicatorChange(clothesIndicator, outfitIndicator)
             showClothesContent()
-            floatingActionButton.visibility = View.GONE
         }
 
         outfitButton.setOnClickListener {
+            Log.d("WardrobeFragment", "Outfit button clicked")
             animateIndicatorChange(outfitIndicator, clothesIndicator)
             showOutfitContent()
-            floatingActionButton.visibility = View.VISIBLE
+        }
+
+        addOutfit.setOnClickListener{
+            val intent = Intent(requireContext(), AddOutfit::class.java)
+            intent.putExtra("USER_ID", userId)
+            startActivity(intent)
+            animateIndicatorChange(outfitIndicator, clothesIndicator)
         }
 
         return root
@@ -131,12 +142,14 @@ class WardrobeFragment : Fragment() {
         //binding.spinnerFilterClothes.visibility = View.VISIBLE
         binding.recyclerViewClothes.visibility = if (categories.isEmpty()) View.GONE else View.VISIBLE
         binding.textNoClothes.visibility = if (categories.isEmpty()) View.VISIBLE else View.GONE
+        addOutfit.visibility = View.GONE
     }
 
     private fun showOutfitContent() {
         //binding.spinnerFilterClothes.visibility = View.GONE
         binding.recyclerViewClothes.visibility = View.GONE
         binding.textNoClothes.visibility = View.VISIBLE
+        addOutfit.visibility = View.VISIBLE
     }
 
     private fun loadClothes() {
