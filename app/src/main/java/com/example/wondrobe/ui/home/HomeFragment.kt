@@ -260,28 +260,35 @@ class HomeFragment : Fragment() {
             .addOnSuccessListener { documents ->
                 val usersIds = documents.mapNotNull { it.id }.filter { it != currentUserUid }
 
-                db.collection("posts")
-                    .whereIn("userId", usersIds)
-                    .get()
-                    .addOnSuccessListener { documents ->
-                        val posts = mutableListOf<Post>()
-                        for (document in documents) {
-                            val postId = document.id
-                            val userId = document.getString("userId") ?: ""
-                            val imageUrl = document.getString("imageUrl") ?: ""
-                            val title = document.getString("title") ?: ""
-                            val description = document.getString("description") ?: ""
-                            val timestamp = document.getTimestamp("timestamp")?.toDate() ?: Date()
+                if (usersIds.isNotEmpty()) {
+                    db.collection("posts")
+                        .whereIn("userId", usersIds)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            val posts = mutableListOf<Post>()
+                            for (document in documents) {
+                                val postId = document.id
+                                val userId = document.getString("userId") ?: ""
+                                val imageUrl = document.getString("imageUrl") ?: ""
+                                val title = document.getString("title") ?: ""
+                                val description = document.getString("description") ?: ""
+                                val timestamp = document.getTimestamp("timestamp")?.toDate() ?: Date()
 
-                            val post = Post(postId, userId, imageUrl, title, description, timestamp)
-                            posts.add(post)
+                                val post = Post(postId, userId, imageUrl, title, description, timestamp)
+                                posts.add(post)
+                            }
+                            updatePostSaveStates(posts)
+                            allPostsAdapter.updateData(posts)
                         }
-                        updatePostSaveStates(posts)
-                        allPostsAdapter.updateData(posts)
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e("HomeFragment", "Error getting posts", exception)
-                    }
+                        .addOnFailureListener { exception ->
+                            Log.e("HomeFragment", "Error getting posts", exception)
+                        }
+                } else {
+                    // Handle the case when usersIds is empty
+                    Log.d("HomeFragment", "No users found other than the current user.")
+                    // Optionally update the UI to reflect no posts found
+                    allPostsAdapter.updateData(emptyList())
+                }
             }
             .addOnFailureListener { exception ->
                 Log.e("HomeFragment", "Error getting users", exception)

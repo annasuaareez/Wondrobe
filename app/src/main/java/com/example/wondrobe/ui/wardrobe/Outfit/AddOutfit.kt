@@ -1,5 +1,6 @@
 package com.example.wondrobe.ui.wardrobe.Outfit
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
@@ -23,6 +24,8 @@ class AddOutfit : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_outfit)
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         firestore = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()

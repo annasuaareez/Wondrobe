@@ -1,6 +1,7 @@
 package com.example.wondrobe.ui.wardrobe.details
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,6 +20,8 @@ class CategoryDetails : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCategoryDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         val categoryName = intent.getStringExtra("categoryName")
         val clothes = intent.getParcelableArrayListExtra<Clothes>("clothesList")

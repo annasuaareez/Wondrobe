@@ -67,16 +67,19 @@ class SelectClothes : AppCompatActivity() {
 
         nextButton.setOnClickListener {
             selectedImageUri?.let { uri ->
-                // Obtener la URL absoluta de la imagen seleccionada
-                val absolutePath = uri.path ?: ""
-                val absoluteUri = Uri.parse("file://$absolutePath")
-                Log.e("SelectedImageUri", absoluteUri.toString())
+                val absolutePath = getRealPathFromUri(uri)
+                if (absolutePath != null) {
+                    val absoluteUri = Uri.parse("file://$absolutePath")
+                    Log.e("SelectedImageUri", absoluteUri.toString())
 
-                val intent = Intent(this, AddClothes::class.java)
-                intent.putExtra("imageUri", absoluteUri.toString())
-                startActivity(intent)
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-                finish()
+                    val intent = Intent(this, AddClothes::class.java)
+                    intent.putExtra("imageUri", absoluteUri.toString())
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                    finish()
+                } else {
+                    Toast.makeText(this, "Error al obtener la ruta absoluta de la imagen", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
