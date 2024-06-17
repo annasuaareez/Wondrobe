@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.wondrobe.R
@@ -19,7 +20,6 @@ import com.example.wondrobe.databinding.FragmentWardrobeBinding
 import com.example.wondrobe.ui.wardrobe.Outfit.AddOutfit
 import com.example.wondrobe.ui.wardrobe.details.CategoryDetails
 import com.example.wondrobe.utils.UserUtils
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 
@@ -31,7 +31,7 @@ class WardrobeFragment : Fragment() {
     private lateinit var categoryAdapter: ClothesCategoryAdapter
     private val categories = mutableListOf<ClothesCategory>()
     private var selectedType: String? = null
-    private lateinit var addOutfit: FloatingActionButton
+    private lateinit var addOutfit: ImageButton
 
     override fun onCreateView(
         inflater: LayoutInflater,

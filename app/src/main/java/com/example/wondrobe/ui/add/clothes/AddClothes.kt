@@ -141,7 +141,7 @@ class AddClothes : AppCompatActivity() {
                         clothesCollection.document(clotheId)
                             .update("imageUrl", imageUrl)
                             .addOnSuccessListener {
-                                showAlertToast("Post published successfully")
+                                showAlertToast("Clothes published successfully")
                                 navigateToSelectClothes()
                             }
                             .addOnFailureListener { e ->

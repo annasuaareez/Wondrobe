@@ -78,12 +78,14 @@
         </LinearLayout>
 
         <ScrollView
+            android:id="@+id/scrollView2"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@id/optionsWardrobeLayout"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="80dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/optionsWardrobeLayout">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -102,24 +104,29 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:textSize="23sp"
-                    android:text="@string/upload_clothes"
                     android:fontFamily="@font/kollektif"
+                    android:text="@string/upload_clothes"
+                    android:textSize="23sp"
                     android:visibility="gone" />
             </LinearLayout>
-        </ScrollView>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addOutfit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/create_outfit"
-        android:visibility="gone"
-        android:backgroundTint="@color/purple_light"
-        app:srcCompat="@drawable/ic_add"
-        app:layout_anchorGravity="right|bottom"
-        app:layout_anchor="@id/recycler_view_clothes"/>
+        </ScrollView>
+
+        <ImageButton
+            android:id="@+id/addOutfit"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="end"
+            android:layout_margin="12dp"
+            android:background="@drawable/button_add"
+            android:contentDescription="@string/create_outfit"
+            android:elevation="12dp"
+            android:src="@drawable/ic_add"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/scrollView2"
+            app:layout_constraintEnd_toEndOf="@+id/scrollView2"
+            tools:ignore="MissingConstraints" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
